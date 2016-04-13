@@ -1,24 +1,21 @@
 ## labdrivers
-[![Build Status](https://travis-ci.org/masonlab/labdrivers.svg?branch=master)](https://travis-ci.org/masonlab/labdrivers)
 
 labdrivers is a Python module containing a collection of drivers for common research lab instruments.
 
-These drivers are aimed at users who need to 
-Each driver is implemented as a class, named after the instrument with which it 
-communicates.
-
-The suggested workflow is 
 It contains a suite of instrument-specific drivers which can be used to 
 interface measurement hardware with Python code, along with a set of 
 Jupyter notebooks demonstrating example use cases.
-
-The drivers within the project are intended to be used in python scripts --
+These drivers are aimed at users who need to iteratively modify their experimental setup:
+the drivers within the project are intended to be used in python scripts --
 labdrivers is not a measurement framework with a GUI. 
+
+Each driver is implemented as a class, named after the instrument with which it 
+communicates.
 
 ### Organization of the project
 
 Drivers within the project are organized by instrument brand. Each
-instrument manufacturer has its own submodule under the labdrivers namespace, and
+instrument manufacturer has its own submodule under the `labdrivers` namespace, and
 each individual instrument driver is in a file named after the class which
 implements the driver.
 
@@ -60,11 +57,13 @@ its status instead of attributes which track the instrument's status
 within the driver class.
 
 E.g. do this:
+
     def get_output(self):
         ...
         return instrument.query("OUTPUT?")
 
 instead of this:
+
     # is updated by self.set_output to keep track of the output 
     self.output = ('voltage', 0.05)
 
@@ -76,10 +75,12 @@ either current or voltage) create a single function that takes the
 categorical variable as its first argument.
 
 E.g. do this:
+
     def set_output(self, source_type, source_level):
         ...
 
 instead of this:
+
     def set_output_voltage(self, source_level):
         ...
 
