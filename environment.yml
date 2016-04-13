@@ -1,0 +1,8 @@
+name: labdrivers
+dependencies:
+    - python
+    - pandas
+    - numpy
+    - jupyter
+    - pip:
+        - pyvisa==1.8
