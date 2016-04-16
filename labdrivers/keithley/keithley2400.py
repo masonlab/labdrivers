@@ -1,4 +1,4 @@
-"""Module containing classes to interface with Keithley brand instruments
+"""Module containing a class to interface with a Keithley 2400 SMU
 
 This module requires a National Instruments VISA driver, which can be found at
 https://www.ni.com/visa/
@@ -21,8 +21,12 @@ import time
 import logging
 import pandas as pd
 from numpy import linspace
-import visa
-from pyvisa.errors import VisaIOError
+
+try:
+    import visa
+    from pyvisa.errors import VisaIOError
+except ImportError:
+    pass
 
 DEFAULT_NUM_POINTS = 1  # number of data points to collect for each measurement
 DEFAULT_SAVE_PATH = "C://Data/pythonData/",

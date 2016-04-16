@@ -73,4 +73,4 @@ PACKAGES = ['labdrivers',
             'labdrivers.srs',
             'labdrivers.quantumdesign']
 PACKAGE_DATA = {'labdrivers': [pjoin('data', '*')]}
-REQUIRES = ["numpy", "pyvisa", "pandas"]
+REQUIRES = ["numpy", "pyvisa", "pandas", "pythonnet"]

@@ -1,7 +1,7 @@
 """Module containing a class to interface with a QuantumDesign PPMS DynaCool
 
 This module provides a python wrapper to the C# .dll provided by QuantumDesign.
-Importing the C# .dll requirest the python module 'pythonnet'.
+Importing the C# .dll requires the python module 'pythonnet'.
 
 Attributes:
     logger: a python logger object
@@ -12,26 +12,37 @@ Classes:
 
 """
 
+import logging
+
+# create a logger object for this module
+logger = logging.getLogger(__name__)
+# added so that log messages show up in Jupyter notebooks
+logger.addHandler(logging.StreamHandler())
+
 # requires Python for .NET
 # can be installed with 'pip install pythonnet'
-import clr
-
-# load the C# .dll supplied by Quantum Design
 try:
-    clr.AddReference('QDInstrument')
-except:
-    if clr.FindAssembly('QDInstrument') is None:
-        print('Could not find QDInstrument.dll')
-    else:
-        print('Found QDInstrument.dll at {}'.format(clr.FindAssembly('QDInstrument')))
-        print('Try right-clicking the .dll, selecting "Properties", and then clicking "Unblock"')
+    import clr
 
-# import the C# classes for interfacing with the PPMS
-from QuantumDesign.QDInstrument import QDInstrumentBase, QDInstrumentFactory
+    try:
+        # load the C# .dll supplied by Quantum Design
+        clr.AddReference('QDInstrument')
 
+        # import the C# classes for interfacing with the PPMS
+        from QuantumDesign.QDInstrument import QDInstrumentBase, QDInstrumentFactory
 
-QDI_DYNACOOL_TYPE = QDInstrumentBase.QDInstrumentType.DynaCool
-DEFAULT_PORT = 11000
+        QDI_DYNACOOL_TYPE = QDInstrumentBase.QDInstrumentType.DynaCool
+        DEFAULT_PORT = 11000
+
+    except:
+        if clr.FindAssembly('QDInstrument') is None:
+            logger.exception('\n\tCould not find QDInstrument.dll')
+        else:
+            logger.exception('\n\tFound QDInstrument.dll at {}'.format(clr.FindAssembly('QDInstrument')))
+            logger.exception('\n\tTry right-clicking the .dll, selecting "Properties", and then clicking "Unblock"')
+
+except ImportError:
+    logger.exception('\n\tCould not import clr. Install Python for .NET with "pip install pythonnet"')
 
 
 class Dynacool:
