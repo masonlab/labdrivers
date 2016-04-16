@@ -11,7 +11,7 @@ Attributes:
 
 
 Classes:
-    Keithley2400: a class for interfacing with a Keithley2400 SMU
+    keithley2400: a class for interfacing with a Keithley2400 SMU
 
 """
 
@@ -43,7 +43,7 @@ except OSError:
     logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
 
 
-class Keithley2400():
+class keithley2400():
     """A class to interface with the Keithley 2400 sourcemeter
 
     Args:
@@ -85,7 +85,7 @@ class Keithley2400():
     """
 
     def __init__(self, GPIBaddr):
-        """Create an instance of the Keithley2400 class
+        """Create an instance of the keithley2400 class
 
         Arguments:
             GPIBaddr -- The GPIB address of the instrument.
@@ -103,7 +103,7 @@ class Keithley2400():
             assert len(self._visa_resource.query("*IDN?")) > 0 , 'Instrument identification failed.'
 
         except NameError:
-            error_msg = "\n\tCannot instantiate Keithley2400 instance. Is the National Instruments VISA library installed?\n\n"
+            error_msg = "\n\tCannot instantiate keithley2400 instance. Is the National Instruments VISA library installed?\n\n"
             logger.exception(error_msg)
             raise NameError
 

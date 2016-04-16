@@ -8,7 +8,7 @@ Attributes:
 
 
 Classes:
-    Dynacool: a class for interfacing with a QuantumDesign PPMS DynaCool
+    dynacool: a class for interfacing with a QuantumDesign PPMS DynaCool
 
 """
 
@@ -45,8 +45,10 @@ except ImportError:
     logger.exception('\n\tCould not import clr. Install Python for .NET with "pip install pythonnet"')
 
 
-class Dynacool:
-    """Thin wrapper around the QuantumDesign.QDInstrument.QDInstrumentBase class"""
+class dynacool:
+    """Thin wrapper around the C# QuantumDesign.QDInstrument.QDInstrumentBase class
+    provided in the QDInstrument.dll file.
+    """
 
     def __init__(self, ip_address, remote=True):
         self.qdi_instrument = QDInstrumentFactory.GetQDInstrument(
