@@ -1,6 +1,24 @@
+"""Module containing a class to interface with a SR830 Lockin Amplifier
+
+This module requires a National Instruments VISA driver, which can be found at
+https://www.ni.com/visa/
+
+Attributes:
+    resource_manager: the pyvisa resource manager which provides the visa
+                      objects used for communicating over the GPIB interface
+
+    logger: a python logger object
+
+
+Classes:
+    sr830: a class for interfacing with a SR830 Lockin Amplifier
+
+"""
 import time
 import logging
 
+# non standard-lib libraries, wrapped w/ try catch so that 
+# readthedocs doesn't fail to build the documentation
 try:
     import visa
     from pyvisa.errors import VisaIOError

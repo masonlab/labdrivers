@@ -19,10 +19,12 @@ from math import ceil
 import os.path
 import time
 import logging
-import pandas as pd
-from numpy import linspace
 
+# non standard-lib libraries, wrapped w/ try catch so that 
+# readthedocs doesn't fail to build the documentation
 try:
+    import pandas as pd
+    from numpy import linspace
     import visa
     from pyvisa.errors import VisaIOError
 except ImportError:
