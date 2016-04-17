@@ -1,6 +1,11 @@
 import time
 import logging
-import visa
+
+try:
+    import visa
+    from pyvisa.errors import VisaIOError
+except ImportError:
+    pass
 
 # create a logger object for this module
 logger = logging.getLogger(__name__)

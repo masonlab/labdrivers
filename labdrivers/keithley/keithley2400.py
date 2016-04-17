@@ -87,8 +87,8 @@ class keithley2400():
     def __init__(self, GPIBaddr):
         """Create an instance of the keithley2400 class
 
-        Arguments:
-            GPIBaddr -- The GPIB address of the instrument.
+        Args:
+            GPIBaddr: The GPIB address of the instrument.
         """
         try:
             self._visa_resource = resource_manager.open_resource("GPIB::%d" % GPIBaddr)
