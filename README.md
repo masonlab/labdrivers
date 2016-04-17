@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/labdrivers/badge/?version=latest)](http://labdrivers.readthedocs.org/en/latest/?badge=latest)
+
 ## labdrivers
 
 labdrivers is a Python module containing a collection of drivers for common research lab instruments.
@@ -14,11 +16,11 @@ for then you might want to check out one of the projects listed at
 
 ### Documentation
 
-For examples of how to use the drivers please see the Jupyter notebooks in the `example_nbs`folder.
+For examples of how to use the drivers please see the Jupyter notebooks in the `example_nbs` folder.
 
 For the full driver API documentation, along with a description of the design decisions underlying 
-the driver implementations please see 
-[http://labdrivers.readthedocs.org/en/latest/index.html](http://labdrivers.readthedocs.org/en/latest/index.html).
+the driver implementations please see the full documentation at 
+[labdrivers.readthedocs.org](labdrivers.readthedocs.org).
 
 ### Contributing new drivers
 
