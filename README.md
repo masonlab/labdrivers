@@ -31,7 +31,7 @@ Currently labdrivers contains drivers for the following instruments:
 
 So for example, to load the driver for a Keithley 2400 SMU,
 
-    from labdrivers.keithley.keithley2400 import Keithley2400
+    from labdrivers.keithley import keithley2400
 
 
 ### Driver API design

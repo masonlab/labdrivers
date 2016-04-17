@@ -1,1 +1,1 @@
-from .dynacool import Dynacool
+from .dynacool import dynacool

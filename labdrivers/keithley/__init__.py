@@ -1,1 +1,1 @@
-from .keithley2400 import Keithley2400
+from .keithley2400 import keithley2400
