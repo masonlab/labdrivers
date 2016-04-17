@@ -41,6 +41,9 @@ try:
     resource_manager = visa.ResourceManager()
 except OSError:
     logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
+except NameError:
+    # visa module not imported, allow this so that docs build
+    pass
 
 
 class keithley2400():
