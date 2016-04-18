@@ -1,6 +1,6 @@
-#################
-Driver API design
-#################
+#########################
+Contributing new drivers
+#########################
 
 Each driver is implemented as a class named after the corresponding instrument.
 Each class contains the broadest subset of the following components
@@ -16,9 +16,9 @@ The driver classes are intended to be used directly (for example, as part
 of a Jupyter notebook-based workflow), therefore simplicity is prioritized
 over completeness.
 
-^^^^^^^^^^^
-Conventions
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
+Coding conventions
+^^^^^^^^^^^^^^^^^^
 
 The drivers in the labdrivers package follow the following conventions:
 
@@ -34,9 +34,13 @@ The drivers in the labdrivers package follow the following conventions:
     setTemperature
     measurePoint
 
+
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Minimize the amount of 'internal state' maintained by the driver
+Driver design principles
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+- Minimize the amount of 'internal state' maintained by the driver
 
 Wherever possible, implement methods which query the instrument about
 its status instead of attributes which track the instrument's status
@@ -44,18 +48,20 @@ within the driver class.
 
 E.g. do this::
 
-    def get_output(self):
-        ...
-        return instrument.query("OUTPUT?")
+    def getOutput(self):
+        return self.instrument.query("OUTPUT?")
 
 instead of this::
 
-    # is updated by self.set_output to keep track of the output 
-    self.output = ('voltage', 0.05)
+    def setOutput(self, out_type, level):
+        self.instrument.write("OUTPUT {out_type} {level}".format(out_type, level))
+        self.output = (out_type, level)
 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Limit the number of :code:`get_<parameter>` and :code:`set_<parameter>` methods
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    def getOutput():
+        return self.output
+
+
+- Limit the number of :code:`get_<parameter>` and :code:`set_<parameter>` methods
 
 For instrument parameters which take a finite set of categorical variables 
 (for example the output of a digital multimeter, which can be set to source
@@ -74,3 +80,11 @@ instead of this::
 
     def set_output_current(self, source_level):
         ...
+
+
+^^^^^^^^^^^^^^^^^^^^^^^
+Documenting drivers
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Each method in the driver should be documented using a "`Google style <http://sphinxcontrib-napoleon.readthedocs.org/en/latest/example_google.html>`_"
+docstring. Check the existing source code for examples.

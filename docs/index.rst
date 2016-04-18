@@ -6,12 +6,10 @@ labdrivers is a Python module containing a collection of drivers for common rese
 It contains a suite of instrument-specific drivers which can be used to 
 interface measurement hardware with Python code, along with a set of 
 Jupyter notebooks demonstrating example use cases.
-These drivers are aimed at users who need to iteratively modify their experimental setup:
-the drivers within the project are intended to be used in python scripts --
-labdrivers is not a measurement framework with a GUI. 
+The drivers within the project are intended to be used 'manually', either in python scripts or in Jupyter notebooks.
 
-Each driver is implemented as a class, named after the instrument with which it 
-communicates.
+Labdrivers is not a measurement framework with a GUI; if that's what you're looking for 
+then you might want to check out one of the projects listed at https://github.com/pyinstruments/pyinstruments.
 
 Organization of the project
 ----------------------------
@@ -42,6 +40,7 @@ Documentation Table of Contents
 .. toctree::
    :maxdepth: 4
 
+   installation
    usage
-   design
-   modules
+   moduleapis
+   contributing

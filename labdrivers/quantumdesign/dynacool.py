@@ -46,7 +46,9 @@ except ImportError:
 
 
 class dynacool:
-    """Thin wrapper around the C# QuantumDesign.QDInstrument.QDInstrumentBase class
+    """A class to interface with the QuantumDesign PPMS Dynacool.
+    
+    This class is a thin wrapper around the C# QuantumDesign.QDInstrument.QDInstrumentBase class
     provided in the QDInstrument.dll file.
     """
 
@@ -67,7 +69,7 @@ class dynacool:
 
         Args:
             temp (float): the target temperature in Kelvin
-            rate (int): the sweep rate in Kevlin / minute
+            rate (int): the sweep rate in Kelvin / minute
 
         Returns:
             int: status

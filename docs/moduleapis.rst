@@ -1,5 +1,5 @@
 #################
-Driver Modules
+Driver APIs
 #################
 
 .. toctree::

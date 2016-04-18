@@ -1,4 +1,5 @@
 *.pyc
 *.un~
 *.swp
+*_build/*
 ALTERNATIVES
