@@ -26,6 +26,9 @@ the driver implementations please see the full documentation at
 
 Pull requests with new drivers are welcome! 
 
-Before submitting a request please
+For a list of coding conventions used within `labdrivers`, along with some
+guiding design principles please see [here](http://labdrivers.readthedocs.org/en/latest/contributing.html).
+
+Also, Before submitting a request please
 make sure your code follows the PEP8 Python style guidelines (except for the
 one concerning maximum line length. 
