@@ -12,6 +12,15 @@ can use `pip`::
 
     > pip install git+https://github.com/masonlab/labdrivers.git
 
+Note that this requires `git`, which can be found here: https://git-scm.com/. 
+
+If you prefer to install manually, download the labdrivers package from 
+here: https://github.com/masonlab/labdrivers, then copy the `labdrivers` folder
+to::
+
+    (system python path)/lib/site-packages/
+
+
 Installing to a Conda Environment
 ---------------------------------
 
@@ -30,5 +39,3 @@ and start a Juypter notebook server with::
     > source activate labdrivers          (on linux)
     > activate labdrivers                 (on windows)
     > jupyter notebook
-
-
