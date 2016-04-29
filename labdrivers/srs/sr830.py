@@ -63,9 +63,6 @@ class sr830():
     def getAmplitude(self):
         return self._visa_resource.query_ascii_values('SLVL?')
        
-    def __init__(self, GPIBaddr):
-        super(sr830, self).__init__("GPIB::%d" % GPIBaddr)
-  
     def recordValue(self, i, j):
         self._visa_resource.write("SNAP? {}, {}".format(i, j))
         
