@@ -138,40 +138,42 @@ class keithley2400():
         self._visa_resource.write("TRACE:FEED SENSE1")
         self._visa_resource.write("SYSTEM:TIME:RESET:AUTO 0")
 
-    def _startMeasurement(self):
+    def _activateBuffer(self):
         """Activate the instrument's internal data storage."""
 
         self._visa_resource.write("TRACE:FEED:CONTROL NEXT")
 
-    def _stopMeasurement(self):
+    def _deactivateBuffer(self):
         """Clear the instrument's internal buffer, and reset status bytes
         to prepare for a new measurement."""
 
-        self._clearData()
         self._visa_resource.write("TRACE:FEED:CONTROL NEVER")
-        self._visa_resource.query("STATUS:MEASUREMENT?")
 
     def _pullData(self):
         """Retrieve data from the instrument's internal buffer and store it in self.data."""
 
-        self._visa_resource.write("TRACE:FEED:CONTROL NEXT")
-        # returns (V, I, I/V, time, ?) for each data point in a flat list
-        # I/V column is only meaningful if the instrument was configured to measure resistance
-        dataList = self._visa_resource.query_ascii_values("TRACE:DATA?")
-        dataDict = {'volts': dataList[0::5],
-                    'amps': dataList[1::5],
-                    'ohms': dataList[2::5],
-                    'seconds': dataList[3::5]}
-        dataDF = pd.DataFrame(dataDict)
+        buffer_points = self._visa_resource.query_ascii_values("TRACE:POINTS:ACTUAL?")[0]
+        
+        if buffer_points > 0:
 
-        self.data = self.data.append(dataDF)
+	        self._activateBuffer()
+	        # returns (V, I, I/V, time, ?) for each data point in a flat list
+	        # I/V column is only meaningful if the instrument was configured to measure resistance
+	        dataList = self._visa_resource.query_ascii_values("TRACE:DATA?")
+	        dataDict = {'volts': dataList[0::5],
+	                    'amps': dataList[1::5],
+	                    'ohms': dataList[2::5],
+	                    'seconds': dataList[3::5]}
+	        dataDF = pd.DataFrame(dataDict)
+	
+	        self.data = self.data.append(dataDF)
 
     def _clearData(self):
         """Clear the data saved in the instrument's buffer."""
 
-        self._visa_resource.write("TRACE:FEED:CONTROL NEVER")
+        self._deactivateBuffer()
         self._visa_resource.write("TRACE:CLEAR")
-        self._visa_resource.write("TRACE:FEED:CONTROL NEXT")
+        self._activateBuffer()
 
     def _rampOutput(self, rampStart, rampTarget, step, timeStep=50E-3):
         """Ramp the output smoothly from one value to another.
@@ -354,14 +356,19 @@ class keithley2400():
         """Turn the output on."""
 
         self._visa_resource.write("OUTPUT ON")
+        self._activateBuffer()
 
     def outputOff(self):
-        """Turn the output off."""
+        """Turn the output off."""	
 
+        self.readTrace()
+        self._deactivateBuffer()
         self._visa_resource.write("OUTPUT OFF")
 
     def measurePoint(self):
-        """Record a data point in the internal buffer. Read and clear the buffer if it is full."""
+        """Record a data point in the internal buffer. Read and clear the buffer if it is full.
+        
+        Approx. 25% faster than readPoint()."""
 
         buffer_points = self._visa_resource.query_ascii_values("TRACE:POINTS:ACTUAL?")[0]
         
