@@ -55,7 +55,7 @@ class sr830():
         self._visa_resource.write("ISRC {}".format(i))
         
     def getPhase(self):
-        return self.ask_for_values('PHAS?')[0]
+        return self._visa_resource.query_ascii_values('PHAS?')[0]
 
     def getInput(self):
         return self._visa_resource.query_ascii_values('ISRC?')
@@ -64,7 +64,7 @@ class sr830():
         self._visa_resource.write("SLVL {}".format(level))
         
     def getAmplitude(self):
-        return self._visa_resource.query_ascii_values('SLVL?')
+        return self._visa_resource.query_ascii_values('SLVL?')[0]
        
     def recordValue(self, i, j):
         self._visa_resource.write("SNAP? {}, {}".format(i, j))
@@ -107,10 +107,10 @@ class sr830():
         return ("TRCA ? {}".format(channel))
 
     def getTimeConst(self):
-        const_dict = {0: '10 탎',  10: '1 s',
-                      1: '30 탎',  11: '3 s',
-                      2: '100 탎', 12: '10 s',
-                      3: '300 탎', 13: '30 s',
+        const_dict = {0: '10 us',  10: '1 s',
+                      1: '30 us',  11: '3 s',
+                      2: '100 us', 12: '10 s',
+                      3: '300 us', 13: '30 s',
                       4: '1 ms',   14: '100 s',
                       5: '3 ms',   15: '300 s',
                       6: '10 ms',  16: '1 ks',
@@ -118,8 +118,11 @@ class sr830():
                       8: '100 ms', 18: '10 ks',
                       9: '300 ms', 19: '30 ks'}
 
-        const_index = self.ask_for_values('OFLT?')[0]
+        const_index = self._visa_resource.query_ascii_values('OFLT?')[0]
         return const_dict[const_index]
+
+    def setTimeConst(self, const_index):
+        self._visa_resource.write("OFLT {}".format(const_index))
 
     def getConfiguration(self):
         freq = self.getFrequency()
