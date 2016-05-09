@@ -49,11 +49,14 @@ class sr830():
         self._visa_resource.write("FREQ {}".format(freq))
     
     def getFrequency(self):
-        return self._visa_resource.query_ascii_values('FREQ?')
+        return self._visa_resource.query_ascii_values('FREQ?')[0]
     
     def setInput(self, i):
         self._visa_resource.write("ISRC {}".format(i))
         
+    def getPhase(self):
+        return self.ask_for_values('PHAS?')[0]
+
     def getInput(self):
         return self._visa_resource.query_ascii_values('ISRC?')
     
@@ -102,3 +105,25 @@ class sr830():
         
     def queryPoint(self, channel):
         return ("TRCA ? {}".format(channel))
+
+    def getTimeConst(self):
+        const_dict = {0: '10 탎',  10: '1 s',
+                      1: '30 탎',  11: '3 s',
+                      2: '100 탎', 12: '10 s',
+                      3: '300 탎', 13: '30 s',
+                      4: '1 ms',   14: '100 s',
+                      5: '3 ms',   15: '300 s',
+                      6: '10 ms',  16: '1 ks',
+                      7: '30 ms',  17: '3 ks',
+                      8: '100 ms', 18: '10 ks',
+                      9: '300 ms', 19: '30 ks'}
+
+        const_index = self.ask_for_values('OFLT?')[0]
+        return const_dict[const_index]
+
+    def getConfiguration(self):
+        freq = self.getFrequency()
+        ampl = self.getAmplitude()
+        tau = self.getTimeConst()
+        theta = self.getPhase()
+        return "Frequency: {:4} Hz - Amplitude: {:4} V - Phase {:4} - Time Constant: {}".format(freq, ampl, theta, tau)
