@@ -20,7 +20,7 @@ For examples of how to use the drivers please see the Jupyter notebooks in the `
 
 For the full driver API documentation, along with a description of the design decisions underlying 
 the driver implementations please see the full documentation at 
-[labdrivers.readthedocs.org](labdrivers.readthedocs.org).
+[https://labdrivers.readthedocs.org](labdrivers.readthedocs.org).
 
 ### Contributing new drivers
 
