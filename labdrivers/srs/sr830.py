@@ -104,7 +104,7 @@ class sr830():
         self._visa_resource.write("FAST {}".format(i))
         
     def queryPoint(self, channel):
-        return ("TRCA ? {}".format(channel))
+        return self._visa_resource.query_ascii_values("TRCA ? {}".format(channel))
 
     def getTimeConst(self):
         const_dict = {0: '10 us',  10: '1 s',

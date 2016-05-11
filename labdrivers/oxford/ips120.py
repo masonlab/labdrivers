@@ -110,7 +110,7 @@ class ips120():
         """
         assert type(state) == int, 'argument must be integer'
         assert state in [0,1,2,3], 'argument must be one of [0,1,2,3]'
-        self._visa_resource.write("A{}".format(i))
+        self._visa_resource.write("A{}".format(state))
 
 
     def setHeater(self, state=1):
@@ -125,7 +125,7 @@ class ips120():
         """
         assert type(state) == int, 'argument must be integer'
         assert state in [0,1,2], 'argument must be one of [0,1,2]'
-        self._visa_resource.write("H{}".format(i))
+        self._visa_resource.write("H{}".format(state))
 
         # TODO: add timer to account for time it takes for switch to activate
 
@@ -139,7 +139,7 @@ class ips120():
         MAX_FIELD = 8
         assert abs(field) < MAX_FIELD, 'field must be less than {}'.format(MAX_FIELD)
 
-        self._visa_resource.write("J{}".format(i))
+        self._visa_resource.write("J{}".format(field))
 
 
     def setFieldSweepRate(self, rate):
@@ -148,7 +148,7 @@ class ips120():
         Args:
             rate(float): the magnetic field sweep rate, in Tesla/min
         """
-        self._visa_resource.write("T{}".format(i))
+        self._visa_resource.write("T{}".format(rate))
 
 
     def setDisplay(self, display):
