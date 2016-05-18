@@ -71,6 +71,7 @@ VERSION = __version__
 PACKAGES = ['labdrivers',
             'labdrivers.keithley',
             'labdrivers.srs',
-            'labdrivers.quantumdesign']
+            'labdrivers.quantumdesign',
+            'labdrivers.oxford']
 PACKAGE_DATA = {'labdrivers': [pjoin('data', '*')]}
 REQUIRES = ["numpy", "pyvisa", "pandas", "pythonnet"]
