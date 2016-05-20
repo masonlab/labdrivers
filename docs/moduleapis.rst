@@ -9,3 +9,4 @@ Driver APIs
    labdrivers.oxford
    labdrivers.quantumdesign
    labdrivers.srs
+   labdrivers.ni

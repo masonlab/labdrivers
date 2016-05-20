@@ -1,12 +1,15 @@
 import ctypes
+import numpy as np
+
 import PyDAQmx
+from PyDAQmx import Task
 
 class bnc2110:
-    """Class to interface with a National Instruments BNC-2110 DAQ
+    """Class to interface with a National Instruments BNC-2110 DAC
     
     Built on top of PyDAQmx. 
     
-    For task.<function> call signature explanations see the NI-DAQmx C Refernce:
+    For task.<function> call signature explanations see:
         All Programs -> National Instruments -> NI-DAQ -> Text-based Code Support
                      -> NI-DAQmx C Reference Help
         
@@ -28,7 +31,7 @@ class bnc2110:
             channel(str): the name of the channel to use
             output(float): the value to output"""
         
-        task = PyDAQmx.Task()
+        task = Task()
 
         # from NI-DAQmx C Reference:
         # int32 DAQmxCreateAOVoltageChan (TaskHandle taskHandle, 
@@ -71,8 +74,8 @@ class bnc2110:
             minVal(float): the minimum value you expect to measure
             maxVal(float): the maximum value you expect to measure"""
         
-        task = PyDAQmx.Task()
-        measured_point = c_double(0)
+        task = Task()
+        measured_point = ctypes.c_double(0)
         
         # from NI-DAQmx C Reference:
         # int32 DAQmxCreateAIVoltageChan (TaskHandle taskHandle, 
@@ -85,10 +88,10 @@ class bnc2110:
         #                                 const char customScaleName[]);
         task.CreateAIVoltageChan('/{}/{}'.format(self.device, channel),
                                  '',
-                                 DAQmx_Val_Cfg_Default,
+                                 PyDAQmx.DAQmx_Val_Cfg_Default,
                                  minVal,
                                  maxVal,
-                                 DAQmx_Val_Volts,
+                                 PyDAQmx.DAQmx_Val_Volts,
                                  None)
 
 
@@ -98,8 +101,8 @@ class bnc2110:
         #                                 float64 timeout, 
         #                                 float64 *value, 
         #                                 bool32 *reserved);
-        data = task.ReadAnalogScalarF64(1.0,
-                                 ctypes.POINTER(c_double)(measured_point),
+        task.ReadAnalogScalarF64(1.0,
+                                 ctypes.POINTER(ctypes.c_double)(measured_point),
                                  None)
         
         # see http://stackoverflow.com/questions/1413851/expected-lp-c-double-instance-instead-of-c-double-array-python-ctypes-error
