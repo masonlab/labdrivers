@@ -72,6 +72,7 @@ PACKAGES = ['labdrivers',
             'labdrivers.keithley',
             'labdrivers.srs',
             'labdrivers.quantumdesign',
-            'labdrivers.oxford']
+            'labdrivers.oxford',
+            'labdrivers.ni']
 PACKAGE_DATA = {'labdrivers': [pjoin('data', '*')]}
 REQUIRES = ["numpy", "pyvisa", "pandas", "pythonnet"]
