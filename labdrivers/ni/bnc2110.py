@@ -185,7 +185,7 @@ class bnc2110:
                                  PyDAQmx.DAQmx_Val_Amps,
                                  PyDAQmx.DAQmx_Val_Default,
                                  1.0,
-                                 1.0)
+                                 None)
 
 
         task.StartTask()
