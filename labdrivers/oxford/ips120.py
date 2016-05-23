@@ -50,6 +50,7 @@ class ips120():
             GPIBaddr(int): GPIB address of the IPS 120-10
         """
         self._visa_resource = resource_manager.open_resource("GPIB::%d" % GPIBaddr)
+        self._visa_resource.read_termination = '\r'
         self.setDisplay('tesla')
 
 
@@ -67,7 +68,7 @@ class ips120():
         assert type(state) == int, 'argument must be integer'
         assert state in [0,1,2,3], 'argument must be one of [0,1,2,3]'
 
-        self._visa_resource.write("C{}".format(state))
+        self._visa_resource.write("$C{}".format(state))
 
 
     def readField(self):
@@ -76,7 +77,11 @@ class ips120():
         Returns:
             field(float): current magnetic field in Tesla
         """
-        return self._visa_resource.query_ascii_values('R 7')
+        self._visa_resource.write('R 7')
+        self._visa_resource.wait_for_srq()
+        value_str = self._visa_resource.read()
+
+        return float(value_str.strip('R+'))
 
 
     def readFieldSetpoint(self):
@@ -85,7 +90,11 @@ class ips120():
         Returns:
             setpoint(float): current set point for the magnetic field in Tesla
         """
-        return self._visa_resource.query_ascii_values('R 8')
+        self._visa_resource.write('R 8')
+        self._visa_resource.wait_for_srq()
+        value_str = self._visa_resource.read()
+
+        return float(value_str.strip('R+'))
 
 
     def readFieldSweepRate(self):
@@ -94,7 +103,11 @@ class ips120():
         Returns:
             sweep_rate(float): current magnetic field sweep rate in Tesla/min
         """
-        return self._visa_resource.query_ascii_values('R 9')
+        self._visa_resource.write('R 9')
+        self._visa_resource.wait_for_srq()
+        value_str = self._visa_resource.read()
+
+        return float(value_str.strip('R+'))
 
 
     def setActivity(self, state=1):
@@ -110,7 +123,7 @@ class ips120():
         """
         assert type(state) == int, 'argument must be integer'
         assert state in [0,1,2,3], 'argument must be one of [0,1,2,3]'
-        self._visa_resource.write("A{}".format(state))
+        self._visa_resource.write("$A{}".format(state))
 
 
     def setHeater(self, state=1):
@@ -125,7 +138,7 @@ class ips120():
         """
         assert type(state) == int, 'argument must be integer'
         assert state in [0,1,2], 'argument must be one of [0,1,2]'
-        self._visa_resource.write("H{}".format(state))
+        self._visa_resource.write("$H{}".format(state))
 
         # TODO: add timer to account for time it takes for switch to activate
 
@@ -139,7 +152,7 @@ class ips120():
         MAX_FIELD = 8
         assert abs(field) < MAX_FIELD, 'field must be less than {}'.format(MAX_FIELD)
 
-        self._visa_resource.write("J{}".format(field))
+        self._visa_resource.write("$J{}".format(field))
 
 
     def setFieldSweepRate(self, rate):
@@ -148,7 +161,7 @@ class ips120():
         Args:
             rate(float): the magnetic field sweep rate, in Tesla/min
         """
-        self._visa_resource.write("T{}".format(rate))
+        self._visa_resource.write("$T{}".format(rate))
 
 
     def setDisplay(self, display):
@@ -163,7 +176,7 @@ class ips120():
                      'tesla':9
                     }
 
-        self._visa_resource.write("M{}".format(mode_dict[display]))
+        self._visa_resource.write("$M{}".format(mode_dict[display]))
 
 
     def waitForField(self, timeout=600, error_margin=0.01):
