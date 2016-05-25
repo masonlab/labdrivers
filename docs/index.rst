@@ -27,6 +27,7 @@ Currently labdrivers contains drivers for the following instruments::
 	|-- ni
 	    `-- bnc2110.py
 	|-- oxford
+	    |-- itc503.py
 	    `-- ips120.py
 	|-- quantumdesign
 	    `-- dynacool.py

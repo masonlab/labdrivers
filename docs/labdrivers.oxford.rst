@@ -6,6 +6,11 @@ labdrivers.oxford
    :maxdepth: 2
 
 
+.. autoclass:: labdrivers.oxford.itc503.itc503
+    :members:
+    :undoc-members:
+
+
 .. autoclass:: labdrivers.oxford.ips120.ips120
     :members:
     :undoc-members:
