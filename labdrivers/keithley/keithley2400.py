@@ -56,37 +56,6 @@ class keithley2400():
 
     Attributes:
         data: a pandas dataframe containing data recorded by the instrument
-
-    Methods:
-        setMeasure
-            Set what to measure (current, voltage, or resistance).
-        setSourceDC
-            Set the type (voltage or current) and level of a DC output.
-        setSourceSweep
-            Set the type and parameters of an output sweep
-        setCompliance
-            Set the type and level of the output compliance limit.
-
-        getMeasure
-            Get what type of input is currently being measured.
-        getSource
-            Get the currently configured type and level of the output.
-        getCompliance
-            Get the type and level of the output compliance limit.
-        getConfig
-            Get a string summarizing the current instrument configuration.
-
-        measurePoint
-            Perform a single measurement with the current configuration and store it in the instrument's buffer.
-        readTrace
-            Read the data stored in the instrument's internal buffer, and store it in self.data.
-        readPoint
-            Perform a single measurement with the current configuration, read the result, and store it in self.data.
-        outputOn
-            Turn the instrument's output on, at the currently configured source value.
-        outputOff
-            Turn the instrument's output off.
-
     """
 
     def __init__(self, GPIBaddr):

@@ -47,7 +47,7 @@ except ImportError:
 
 class dynacool:
     """A class to interface with the QuantumDesign PPMS Dynacool.
-    
+
     This class is a thin wrapper around the C# QuantumDesign.QDInstrument.QDInstrumentBase class
     provided in the QDInstrument.dll file.
     """
