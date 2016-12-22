@@ -6,3 +6,6 @@ dependencies:
     - jupyter
     - pip:
         - pyvisa==1.8
+        - pythonnet
+        - PyDAQmx
+        - pyvisa
