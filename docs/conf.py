@@ -300,6 +300,6 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 # mock some modules that we don't need just to build the docs
-MOCK_MODULES = ['clr','visa','pyvisa','pyvisa.errors', 'QuantumDesign.QDInstrument', 'PyDAQmx']
+MOCK_MODULES = ['pandas', 'numpy','clr','visa','pyvisa','pyvisa.errors', 'QuantumDesign.QDInstrument', 'PyDAQmx']
 for mod_name in MOCK_MODULES:
         sys.modules[mod_name] = mock.Mock()
