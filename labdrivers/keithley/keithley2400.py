@@ -20,15 +20,11 @@ import os.path
 import time
 import logging
 
-# non standard-lib libraries, wrapped w/ try catch so that 
-# readthedocs doesn't fail to build the documentation
-try:
-    import pandas as pd
-    from numpy import linspace
-    import visa
-    from pyvisa.errors import VisaIOError
-except ImportError:
-    pass
+import pandas as pd
+import visa
+
+from numpy import linspace
+from pyvisa.errors import VisaIOError
 
 DEFAULT_NUM_POINTS = 1  # number of data points to collect for each measurement
 DEFAULT_SAVE_PATH = "C://Data/pythonData/",
@@ -43,9 +39,6 @@ try:
     resource_manager = visa.ResourceManager()
 except OSError:
     logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
-except NameError:
-    # visa module not imported, allow this so that docs build
-    pass
 
 
 class keithley2400():

@@ -18,13 +18,8 @@ import datetime as dt
 import time
 import logging
 
-# non standard-lib libraries, wrapped w/ try catch so that 
-# readthedocs doesn't fail to build the documentation
-try:
-    import visa
-    from pyvisa.errors import VisaIOError
-except ImportError:
-    pass
+import visa
+from pyvisa.errors import VisaIOError
 
 # create a logger object for this module
 logger = logging.getLogger(__name__)
@@ -36,9 +31,6 @@ try:
     resource_manager = visa.ResourceManager()
 except OSError:
     logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
-except NameError:
-    # visa module not imported, allow this so that docs build
-    pass
 
 
 class itc503():

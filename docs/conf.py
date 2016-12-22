@@ -15,6 +15,7 @@
 
 import sys
 import os
+import mock
 
 # on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -297,3 +298,8 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+# mock some modules that we don't need just to build the docs
+MOCK_MODULES = ['clr','visa','pyvisa','pyvisa.errors', 'QuantumDesign.QDInstrument', 'PyDAQmx']
+for mod_name in MOCK_MODULES:
+        sys.modules[mod_name] = mock.Mock()
