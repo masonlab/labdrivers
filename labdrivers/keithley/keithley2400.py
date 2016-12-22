@@ -45,10 +45,7 @@ class keithley2400():
     """A class to interface with the Keithley 2400 sourcemeter
 
     Args:
-        GPIBaddr: the GPIB address of the instrument
-
-    Attributes:
-        data: a pandas dataframe containing data recorded by the instrument
+        GPIBaddr (int): the GPIB address of the instrument
     """
 
     def __init__(self, GPIBaddr):
@@ -141,13 +138,13 @@ class keithley2400():
         """Ramp the output smoothly from one value to another.
 
         Arguments:
-            rampStart  -- The starting value for the output ramp, in volts or amps.
-            rampTarget -- The ending value for the output ramp, in volts or amps.
-           [nSteps]    -- Optional. The number of steps in the ramp.
-           [timeStep]  -- Optional. The time in seconds between each step in the ramp.
+            rampStart  : The starting value for the output ramp, in volts or amps.
+            rampTarget : The ending value for the output ramp, in volts or amps.
+           [nSteps]    : Optional. The number of steps in the ramp.
+           [timeStep]  : Optional. The time in seconds between each step in the ramp.
 
         Returns:
-            sourceValue -- The output value currently being sourced as a result of the ramp.
+            sourceValue : The output value currently being sourced as a result of the ramp.
         """
 
         source = self.getSource()[0]  # either 'voltage' or 'current'
@@ -170,8 +167,8 @@ class keithley2400():
         """Configure the instrument to provide a constant output.
 
         Arguments:
-            source -- The type of output to source. One of ['voltage' | 'current'].
-            value  -- The output value to source, in volts or amps.
+            source (str): The type of output to source. One of ['voltage' | 'current'].
+            value  (float): The output value to source, in volts or amps.
         """
         if self.getMeasure() == 'RES':
             self._visa_resource.write("SENSE:RESISTANCE:MODE MANUAL")
@@ -193,13 +190,13 @@ class keithley2400():
         """Configure the instrument to perform a sweep measurement.
 
         Arguments:
-            source     -- The type of output to source. One of ['voltage' | 'current'].
-            startValue -- The output value to start the sweep at, in volts or amps.
-            stopValue  -- The output value to stop the sweep at, in volts or amps.
-            sourceStep -- The value by which to step the output, in volts or amps.
+            source (str)      : The type of output to source. One of ['voltage' | 'current'].
+            startValue (float): The output value to start the sweep at, in volts or amps.
+            stopValue  (float): The output value to stop the sweep at, in volts or amps.
+            sourceStep (float): The value by which to step the output, in volts or amps.
 
         Returns:
-            numPts     -- The number of data points to be collected.
+            (int)      : The number of data points to be collected.
         """
 
         # configure the instrument to record the appropriate number of points
@@ -233,8 +230,8 @@ class keithley2400():
         """Specify what the instrument should measure.
 
         Arguments:
-            measure     -- What to measure. One of ['voltage' | 'current' | 'resistance'].
-           [senseMode]  -- Optional. If measuring resistance, set to 0 for two-wire, 1 for four-wire measurements.
+            measure (str) : What to measure. One of ['voltage' | 'current' | 'resistance'].
+           senseMode (int, optional) : If measuring resistance, set to 0 for two-wire, 1 for four-wire measurements.
         """
 
         self._visa_resource.write("SENSE:FUNCTION:OFF 'CURR:DC', 'VOLT:DC', 'RES'")
@@ -260,8 +257,8 @@ class keithley2400():
         """Specify the compliance limit for whatever the instrument is sourcing.
 
         Arguments:
-            source -- The type of output the instrument is sourcing. One of ['voltage' | 'current'].
-            limit  -- The compliance limit, in volts or amps.
+            source (str) : The type of output the instrument is sourcing. One of ['voltage' | 'current'].
+            limit  (float): The compliance limit, in volts or amps.
         """
 
         if source.lower() == 'voltage':
@@ -275,7 +272,7 @@ class keithley2400():
         """Get what the instrument is currently configured to measure.
 
         Returns:
-            measuring -- One of ['voltage' | 'current' | 'resistance']
+            (str): One of ['voltage' | 'current' | 'resistance']
         """
 
         # instrument returns one of "VOLT:DC", "RES" or "CURR:DC"
@@ -289,8 +286,8 @@ class keithley2400():
         """Get the type and level of output the instrument is currently configured to source.
 
         Returns:
-            (source, value) -- source: one of ['voltage' | 'current'].
-                               value:  the level of the output, in volts or amps.
+            (tuple(str, float)) : A tuple containing one of ['voltage' | 'current'] along
+            with the level of the output, in volts or amps.
         """
 
         source = self._visa_resource.query("SOURCE:FUNCTION:MODE?")
@@ -299,16 +296,6 @@ class keithley2400():
             return ('voltage', self._visa_resource.query("SOURCE:VOLTAGE:LEVEL?")[0])
         elif source == "CURR":
             return ('current', self._visa_resource.query("SOURCE:CURRENT:LEVEL?")[0])
-
-    def getCompliance(self):
-        """Get the type and level of the currently configured compliance limit.
-
-        Returns:
-            (source, value) -- source: one of ['voltage' | 'current'].
-                               value:  the level of the compliance limit, in volts or amps.
-        """
-
-        raise NotImplementedError
 
     ########################################################
     # Operation methods: use these to operate the instrument #
@@ -371,9 +358,10 @@ class keithley2400():
         """Save the collected data to file in csv format.
 
         Arguments:
-            filePath --
-            fileName --
-           [mode]    -- Optional.
+            filePath (str): where the place the saved data file
+            fileName (str): the filename to use for the saved data
+            mode (str, optional): whether to append ('a') to an existing file or create a new file with
+                an incrementing ('i') number at the end
         """
 
         # make sure the filePath has a trailing slash
@@ -405,7 +393,7 @@ class keithley2400():
         """Get a string summarizing the current instrument configuration.
 
         Returns:
-            config_str -- A string describing the current instrument configuration.
+            (str) : A string describing the current instrument configuration.
         """
 
         configDict = {'Measuring: ': self.getMeasure(),

@@ -3,10 +3,5 @@ Using the drivers
 #################
 
 For examples of how to use the various instrument drivers please see 
-these examples:
-
-- gate sweep example
-
-- field sweep example
-
-- temperature sweep example
+the example Jupyter notebooks included in the github repository
+`(link) <http://github.com/masonlab/labdrivers/tree/master/example_nbs>`_.
