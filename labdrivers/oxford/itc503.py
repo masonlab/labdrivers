@@ -62,6 +62,20 @@ class itc503():
         self._visa_resource.write("$C{}".format(state))
 
 
+	def setTemperature(self, temperature=0.010):
+		"""Change the temperature set point.
+		
+		Args:
+			temperature(float): temperature to move to in Kelvin.
+				Default: 0.010 K (10 mK) for default no heating
+				above base temperature for any system.
+		"""
+		assert type(temperature) in [int, float], 'argument must be a number'
+		
+		command = '$T' + str(int(1000*temperature)).rjust(5,'0')
+		self._visa_resource.write(command)
+	
+		
     def readTemperature(self, sensor=1):
         """Read the current temperature
         
