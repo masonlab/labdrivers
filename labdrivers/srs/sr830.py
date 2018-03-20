@@ -258,6 +258,7 @@ class sr830():
         const_index = self._visa_resource.query_ascii_values('OFLT?')[0]
         return const_dict[const_index]
 
+		
     def setTimeConst(self, const_index):
         """Set the time constant of the amplifier.
         Possible values:
@@ -277,6 +278,40 @@ class sr830():
             const_index (int): the time constant to use
         """
         self._visa_resource.write("OFLT {}".format(const_index))
+		
+		
+    def setSensitivity(self, sens_index):
+        """Set the sensitivity of the amplifier.
+        See sr830.getSensitivity for dictionary of values.
+        								
+        Args:
+            sens_index (int): index of associated sensitivity
+                            (see above)
+        """
+        self._visa_resource.write("SENS {}".format(sens_index))
+		
+		
+    def getSensitivity(self):
+        """Get the current sensitivity value of the amplifier."""
+		
+        sens_dict = {0: "2 nV/fA",		13: "50 uV/pA",
+					  1: "5 nV/fA",		14: "100 uV/pA",
+					  2: "10 nV/fA",	15: "200 uV/pA",
+					  3: "20 nV/fA",	16: "500 uV/pA",
+					  4: "50 nV/fA",	17: "1 mV/nA",
+					  5: "100 nV/fA",	18: "2 mV/nA",
+					  6: "200 nV/fA",	19: "5 mV/nA",
+					  7: "500 nV/fA",	20: "10 mV/nA",
+					  8: "1 uV/pA",		21: "20 mV/nA",
+					  9: "2 uV/pA",		22: "50 mV/nA",
+					 10: "5 uV/pA",		23: "100 mV/nA",
+					 11: "10 uV/pA",	24: "200 mV/nA",
+					 12: "20 uV/pA",	25: "500 mV/nA",
+										26: "1 V/uA"}
+		
+        sens_index = self._visa_resource.query_ascii_values('SENS?')[0]
+        return sense_dict[sens_index]
+		
 
     def getConfiguration(self):
         freq = self.getFrequency()
