@@ -85,9 +85,8 @@ class keithley2400():
 
     # adapted from http://pyvisa.sourceforge.net/pyvisa.html#a-more-complex-example
     def _initialize(self):
-        """Initialize the instrument to its default configuration."""
+        """Initialize the instrument to enable data readout."""
 
-        self._visa_resource.write("*RST")
         self._visa_resource.write("*CLS")
         self._visa_resource.write("STATUS:MEASUREMENT:ENABLE 512")
         self._visa_resource.write("*SRE 1")
@@ -163,6 +162,25 @@ class keithley2400():
     # Configuration methods: use these to configure the instrument #
     ##############################################################
 
+    def resetDefaults(self):
+        """Reset all parameters to default.
+        
+        Please see Keithley 2400 manual for all the SCPI commands.
+        Find the SCPI commands table, and look at the column named
+        'default' to find all the default parameters
+        
+        Examples of default parameters:
+            SCPI COMMAND                DEFAULT
+            ------------                -------
+            OUTPUT                      OFF
+            SENSe:CURRent:RANGe:AUTO    ON
+            SENSe:RESistance:MODE       AUTO
+            
+        """
+        self._visa_resource.write("*RST")
+        return None
+
+    
     def setSourceDC(self, source, value=0):
         """Configure the instrument to provide a constant output.
 
