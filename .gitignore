@@ -5,3 +5,5 @@
 *.swp
 *_build/*
 ALTERNATIVES
+
+venv/
