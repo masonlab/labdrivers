@@ -6,7 +6,6 @@ cause the turbo pump to be unhappy, and so should be avoided.
 
 import socket
 
-
 class Triton200():
 
     default_channel = 5

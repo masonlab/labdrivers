@@ -49,7 +49,6 @@ class itc503():
         self._visa_resource = resource_manager.open_resource("GPIB::%d" % GPIBaddr)
         self._visa_resource.read_termination = '\r'
 
-
     def setControl(self, state=3):
         """Set the LOCAL / REMOTE control state of the ITC 503
 
@@ -69,21 +68,19 @@ class itc503():
 
         self._visa_resource.write("$C{}".format(state))
 
+    def setTemperature(self, temperature=0.010):
+        """Change the temperature set point.
+        
+        Args:
+            temperature(float): temperature to move to in Kelvin.
+                Default: 0.010 K (10 mK) for default no heating
+                above base temperature for any system.
+        """
+        assert type(temperature) in [int, float], 'argument must be a number'
+        
+        command = '$T' + str(int(1000*temperature))
+        self._visa_resource.write(command)
 
-	def setTemperature(self, temperature=0.010):
-		"""Change the temperature set point.
-		
-		Args:
-			temperature(float): temperature to move to in Kelvin.
-				Default: 0.010 K (10 mK) for default no heating
-				above base temperature for any system.
-		"""
-		assert type(temperature) in [int, float], 'argument must be a number'
-		
-		command = '$T' + str(int(1000*temperature))
-		self._visa_resource.write(command)
-	
-		
     def getValue(self, variable=0):
         """Read the variable defined by the index.
         
@@ -109,7 +106,6 @@ class itc503():
         
         return float(value.strip('R+'))
         
-        
     def setProportional(self, prop=0):
         """Sets the proportional band.
         
@@ -118,7 +114,6 @@ class itc503():
         """
         self._visa_resource.write('$P{}'.format(prop))
         return None
-        
         
     def setIntegral(self, integral=0):
         """Sets the integral action time.
@@ -130,7 +125,6 @@ class itc503():
         self._visa_resource.write('$I{}'.format(integral))
         return None
         
-        
     def setDerivative(self, derivative=0):
         """Sets the derivative action time.
         
@@ -140,7 +134,6 @@ class itc503():
         """
         self._visa_resource.write('$D{}'.format(derivative))
         return None
-        
         
     def setHeaterSensor(self, sensor=1):
         """Selects the heater sensor.
@@ -155,7 +148,6 @@ class itc503():
         self._visa_resource.write('$H{}'.format(sensor))
         return None
         
-    
     def setHeaterOutput(self, heater_output=0):
         """Sets the heater output level.
         
@@ -167,8 +159,7 @@ class itc503():
         
         self._visa_resource.write('$O{}'.format(heater_output))
         return None
-        
-        
+
     def setGasOutput(self, gas_output=0):
         """Sets the gas (needle valve) output level.
         
@@ -178,8 +169,7 @@ class itc503():
                     Min: 0. Max: 999.
         """
         self._visa_resource.write('$G{}'.format(gas_output))
-        return None
-        
+        return None      
         
     def setAutoControl(self, auto_manual=0):
         """Sets automatic control for heater/gas(needle valve).
@@ -193,4 +183,71 @@ class itc503():
         Args:
             auto_manual: Index for gas/manual.
         """
-        self._visa_resource.write('$A{}'.format(automanual))
+        self._visa_resource.write('$A{}'.format(auto_manual))
+
+    def setSweeps(self, sweep_parameters):
+        """Sets the parameters for all sweeps.
+
+        This fills up a dictionary with all the possible steps in
+        a sweep. If a step number is not found in the sweep_parameters
+        dictionary, then it will create the sweep step with all
+        parameters set to 0.
+
+        Args:
+            sweep_parameters: A dictionary whose keys are the step
+                numbers (keys: 1-16). The value of each key is a
+                dictionary whose keys are the parameters in the
+                sweep table (see _setSweepStep).
+        """
+        steps = range(1,17)
+        parameters_keys = sweep_parameters.keys()
+        null_parameter = {  'set_point' : 0,
+                            'sweep_time': 0,
+                            'hold_time' : 0  }
+
+        for step in steps:
+            if step in parameters_keys:
+                self._setSweepStep(step, sweep_parameters[step])
+            else:
+                self._setSweepStep(step, null_parameter)
+
+    def _setSweepStep(self, sweep_step, sweep_table):
+        """Sets the parameters for a sweep step.
+
+        This sets the step pointer (x) to the proper step.
+        Then this sets the step parameters (y1, y2, y3) to
+        the values dictated by the sweep_table. Finally, this
+        resets the x and y pointers to 0.
+
+        Args:
+            sweep_step: The sweep step to be modified (values: 1-16)
+            sweep_table: A dictionary of parameters describing the
+                sweep. Keys: set_point, sweep_time, hold_time.
+        """
+        step_setting = '$x{}'.format(sweep_step)
+        self._visa_resource.write(step_setting)
+
+        setpoint_setting = '$s{}'.format(
+                            sweep_table['set_point'])
+        sweeptime_setting = '$s{}'.format(
+                            sweep_table['sweep_time'])
+        holdtime_setting = '$s{}'.format(
+                            sweep_table['hold_time'])
+
+        self._visa_resource.write('$y1')
+        self._visa_resource.write(setpoint_setting)
+
+        self._visa_resource.write('$y2')
+        self._visa_resource.write(sweeptime_setting)
+
+        self._visa_resource.write('$y3')
+        self._visa_resource.write(holdtime_setting)
+
+        self._resetSweepTablePointers()
+
+    def _resetSweepTablePointers(self):
+        """Resets the table pointers to x=0 and y=0 to prevent
+           accidental sweep table changes.
+        """
+        self._visa_resource.write('$x0')
+        self._visa_resource.write('$y0')
