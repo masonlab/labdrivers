@@ -5,3 +5,9 @@
 *.swp
 *_build/*
 ALTERNATIVES
+
+venv/
+.vs/
+.vscode/
+.ipynb_checkpoints/
+example_nbs/.ipynb_checkpoints/

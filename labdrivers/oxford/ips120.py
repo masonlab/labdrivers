@@ -14,7 +14,7 @@ Classes:
     ips120: a class for interfacing with a IPS 120-10 magnet power supply
 
 """
-import datetime as dt
+from datetime import datetime
 import time
 import logging
 
@@ -181,11 +181,12 @@ class ips120():
         Returns:
             (bool): whether the field set point was reached
         """
+        
 
-        start_time = dt.now()
-        stop_time = start_time + dt.timedelta(seconds=timeout)
+        start_time = datetime.now()
+        stop_time = start_time + datetime.timedelta(seconds=timeout)
 
-        while dt.now() < stop_time:
+        while datetime.now() < stop_time:
             field = self.readField()
             set_point = self.readFieldSetpoint()
 
