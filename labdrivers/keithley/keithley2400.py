@@ -315,6 +315,11 @@ class keithley2400():
         elif source == "CURR":
             return ('current', self._visa_resource.query("SOURCE:CURRENT:LEVEL?")[0])
 
+    def close(self):
+        """Closes the VISA session and marks the handle as invalid."""
+        self._visa_resource.close()
+        return None
+
     ########################################################
     # Operation methods: use these to operate the instrument #
     ########################################################
@@ -419,6 +424,12 @@ class keithley2400():
                       'Compliance: ': self.getCompliance()}
 
         return ' - '.join(configDict.items())
+
+    def getCompliance(self):
+        """Get a string describing the compliance in the current
+           configuration.
+        """
+        pass
 
     #####################################################################################################
     # Deprecated methods
