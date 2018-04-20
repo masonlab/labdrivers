@@ -1,4 +1,70 @@
 import socket
+import visa
+
+class MercuryIPS_visa():
+
+    def __init__(self, resource_name):
+        self.resource_name = resource_name
+        self.resource_manager = visa.ResourceManager()
+        self.axis = {   'x': 'GRPX',
+                        'y': 'GRPY',
+                        'z': 'GRPZ'  }
+
+    def set_field_ramp_rate(self, axis, field_ramp_rate):
+        instr = self.resource_manager.open_resource(self.resource_name)
+        command = 'SET:DEV:' + self.axis[axis.lower()] + ':PSU:' \
+                    + 'SIG:RFST' + str(field_ramp_rate) + '\n'
+        response = instr.query(command)
+        return response
+
+    def get_field_ramp_rate(self, axis, field_ramp_rate):
+        instr = self.resource_manager.open_resource(self.resource_name)
+        command = 'READ:DEV:' + self.axis[axis.lower()] + ':PSU:' \
+                    + 'SIG:RFST' + str(field_ramp_rate) + '\n'
+        response = instr.query(command)
+        return response
+
+    def set_field_setpoint(self, axis, field_setpoint):
+        instr = self.resource_manager.open_resource(self.resource_name)
+        command = 'SET:DEV:' + self.axis[axis.lower()] + ':PSU:' \
+                    + 'SIG:FSET' + str(field_setpoint) + '\n'
+        response = instr.query(command)
+        return response
+
+    def get_field_setpoint(self, axis, field_setpoint):
+        instr = self.resource_manager.open_resource(self.resource_name)
+        command = 'READ:DEV:' + self.axis[axis.lower()] + ':PSU:' \
+                    + 'SIG:FSET' + str(field_setpoint) + '\n'
+        response = instr.query(command)
+        return response
+
+    def unclamp_magnet(self, axis):
+        instr = self.resource_manager.open_resource(self.resource_name)
+        command = 'SET:DEV:' + self.axis[axis.lower()] + ':PSU:' \
+                    + 'ACTN:HOLD\n'
+        response = instr.query(command)
+        return response
+
+    def clamp_magnet(self, axis):
+        instr = self.resource_manager.open_resource(self.resource_name)
+        command = 'SET:DEV:' + self.axis[axis.lower()] + ':PSU:' \
+                    + 'ACTN:CLMP\n'
+        response = instr.query(command)
+        return response
+
+    def ramp_to_setpoint(self, axis):
+        instr = self.resource_manager.open_resource(self.resource_name)
+        command = 'SET:DEV:' + self.axis[axis.lower()] + ':PSU:' \
+                    + 'ACTN:RTOS\n'
+        response = instr.query(command)
+        return response
+
+    def ramp_to_zero(self, axis):
+        instr = self.resource_manager.open_resource(self.resource_name)
+        command = 'SET:DEV:' + self.axis[axis.lower()] + ':PSU:' \
+                    + 'ACTN:RTOZ\n'
+        response = instr.query(command)
+        return response
 
 class MercuryIPS():
 
