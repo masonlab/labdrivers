@@ -1,12 +1,21 @@
-"""Python driver to connect the Triton 200 dilution fridge to the controller.
-
-Typically this should be used for the 0 to 2K range. Anything above 2K will
-cause the turbo pump to be unhappy, and so should be avoided.
-"""
-
 import socket
 
 class Triton200():
+    """Module to communicate between remote computer and Triton 200.
+
+    Args:
+        parameters (dict): This is a dictionary consisting of
+        `ip_address` (str), `port` (int), `timeout` (int),
+        and `bytes_to_read` (int)
+    
+    Attributes:
+        address (str, int): The IP address and port number of the
+        Triton 200.
+        timeout (int): The number of seconds that the `socket` object
+        should wait before raising an error.
+        bytes_to_read (int): The number of bytes that the `socket`
+        object should expect when looking for a response.
+    """
 
     default_channel = 5
 
@@ -68,6 +77,10 @@ class Triton200():
             s.connect(self.address)
             s.settimeout(self.timeout)
         pass
+
+    ####################
+    # Helper Functions #
+    ####################
 
     def _get_temperature_parameter(self, channel):
         """Obtains the temperature parameter for calls and responses.

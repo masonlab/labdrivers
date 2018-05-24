@@ -38,7 +38,32 @@ class sr830():
     Args:
         GPIBaddr: the GPIB address of the instrument
     """
-    
+    TIME_CONSTANT = { 0: '10 us',  10: '1 s',
+                      1: '30 us',  11: '3 s',
+                      2: '100 us', 12: '10 s',
+                      3: '300 us', 13: '30 s',
+                      4: '1 ms',   14: '100 s',
+                      5: '3 ms',   15: '300 s',
+                      6: '10 ms',  16: '1 ks',
+                      7: '30 ms',  17: '3 ks',
+                      8: '100 ms', 18: '10 ks',
+                      9: '300 ms', 19: '30 ks'}
+
+    SENSITIVITY = {   0: "2 nV/fA",		13: "50 uV/pA",
+					  1: "5 nV/fA",		14: "100 uV/pA",
+					  2: "10 nV/fA",	15: "200 uV/pA",
+					  3: "20 nV/fA",	16: "500 uV/pA",
+					  4: "50 nV/fA",	17: "1 mV/nA",
+					  5: "100 nV/fA",	18: "2 mV/nA",
+					  6: "200 nV/fA",	19: "5 mV/nA",
+					  7: "500 nV/fA",	20: "10 mV/nA",
+					  8: "1 uV/pA",		21: "20 mV/nA",
+					  9: "2 uV/pA",		22: "50 mV/nA",
+					 10: "5 uV/pA",		23: "100 mV/nA",
+					 11: "10 uV/pA",	24: "200 mV/nA",
+					 12: "20 uV/pA",	25: "500 mV/nA",
+										26: "1 V/uA"}
+
     def __init__(self, GPIBaddr):
         """Create an instance of the sr830 class.
 
@@ -46,116 +71,83 @@ class sr830():
             GPIBaddr (int): The GPIB address of the instrument.
         """
         self._visa_resource = resource_manager.open_resource("GPIB::%d" % GPIBaddr)
-        
-    def setFrequency(self, freq):
-        """Set the frequency of the amplifier.
-
-        Args:
-            freq (int): the frequency of the amplifier
-        """
-        self._visa_resource.write("FREQ {}".format(freq))
     
-    def getFrequency(self):
-        """Get the frequency of the amplifier.
 
-        Returns:
-            int: the frequency of the amplifier
-        """
+    @property
+    def frequency(self):
         return self._visa_resource.query_ascii_values('FREQ?')[0]
+
+
+    @frequency.setter
+    def frequency(self, value):
+        self._visa_resource.write("FREQ {}".format(value))
     
-    def setInput(self, i):
-        """Set the input configuration:
+
+    @property
+    def input(self):
+        return self._visa_resource.query_ascii_values('ISRC?')
+
+
+    @input.setter
+    def input(self, value):
+        """
+        Sets the SR830 input value. Possible values:
             0: A
             1: A-B
             2: I (1 MOhm)
             3: I (100 MOhm)
-
-        Args:
-            i (int): the input configuration to use
         """
-        self._visa_resource.write("ISRC {}".format(i))
-        
-    def getPhase(self):
-        """Get the phase of the amplifier.
+        self._visa_resource.write("ISRC {}".format(value))
 
-        Returns:
-            int: the phase of the amplifier
-        """
+
+    @property
+    def phase(self):
         return self._visa_resource.query_ascii_values('PHAS?')[0]
 
-    def getInput(self):
-        """Get the input configuration of the amplifier.
-            0: A
-            1: A-B
-            2: I (1 MOhm)
-            3: I (100 MOhm)
 
-        Returns:
-            int: the input configuration
-        """
-        return self._visa_resource.query_ascii_values('ISRC?')
+    @phase.setter
+    def phase(self, value):
+        self._visa_resource.write("PHAS {}".format(value))
+
     
-    def setAmplitude(self, level):
-        """Set the amplitude of the amplifier.
-
-        Args:
-            level (int): the amplitude of the amplifier in Vrms
-        """
-        self._visa_resource.write("SLVL {}".format(level))
-        
-    def getAmplitude(self):
-        """Get the amplitude of the amplifier.
-
-        Returns:
-            int: the frequency of the amplifier
-        """
+    @property
+    def amplitude(self):
         return self._visa_resource.query_ascii_values('SLVL?')[0]
-       
-    def recordValue(self, i, j):
-        """Record the current value of two instrument parameters
-        to the internal buffer. Possible parameters are:
-            1: X
-            2: Y
-            3: R
-            4: Theta
-            5: Aux in 1
-            6: Aux in 2
-            7: Aux in 3
-            8: Aux in 4
-            9: Reference frequency
-            10: CH1 display
-            11: CH2 display
 
-        Args:
-            i (int): the first parameter to measure
-            j (int): the second parameter to measure
-        """
-        self._visa_resource.write("SNAP? {}, {}".format(i, j))
-        
-    def rampOutput(self, rampStart, rampStop, rampStep, timeStep=0.1):
-        """Ramp the output of the amplitude.
+    
+    @amplitude.setter
+    def amplitude(self, value):
+        self._visa_resource.write("SLVL {}".format(value))
 
-        Args:
-            rampStart (float): starting value for the output in Vrms
-            rampStop (float): final value for the output in Vrms
-            rampStep (float): ramp step size in Vrms
-            timeStep (float, optional): time step between ramp steps in s
-        """
-        currentLevel = rampStart
-        
-        # if ramping up
-        if rampStart < rampStop:
-            while currentLevel < rampStop:
-                currentLevel += rampStep
-                self.setAmplitude(currentLevel)
-                time.sleep(timeStep)
-                
-        # if ramping down
-        if rampStart > rampStop:
-            while currentLevel > rampStop:
-                currentLevel -= rampStep
-                self.setAmplitude(currentLevel)
-                time.sleep(timeStep)
+
+    @property
+    def time_constant(self):
+        const_index = self._visa_resource.query_ascii_values('OFLT?')[0]
+        return TIME_CONSTANT[const_index]
+
+
+    @time_constant.setter
+    def time_constant(self, value):
+        if value == 'increment':
+            if self.time_constant + 1 <= 19:
+                self.time_constant += 1
+        elif value == 'decrement':
+            if self.time_constant - 1 >= 0:
+                self.time_constant -= 1
+        else:
+            self._visa_resource.write("SENS {}".format(value))
+		
+		
+    @property
+    def sensitivity(self):
+        sens_index = self._visa_resource.query_ascii_values('SENS?')[0]
+        return sense_dict[sens_index]
+
+
+    @sensitivity.setter
+    def sensitivity(self, value):
+        self._visa_resource.write("SENS {}".format(sens_index))
+
                 
     def setDisplay(self, channel, display, ratio=0):
         """Set the display of the amplifier.
@@ -199,7 +191,7 @@ class sr830():
         """
         return self._visa_resource.query_ascii_values("DDEF? {}".format(channel))
     
-    def getSinglePoint(self, parameter):
+    def single_output(self, value):
         """Get the current value of a single parameter.
         Possible parameter values are:
             1: X
@@ -210,9 +202,9 @@ class sr830():
         Returns:
             float: the value of the specified parameter
         """
-        return self._visa_resource.query_ascii_values("OUTP? {}".format(parameter))
+        return self._visa_resource.query_ascii_values("OUTP? {}".format(value))
             
-    def getSnapshot(self, *parameters):
+    def multiple_output(self, *values):
         """Get the current value of between two and six instrument parameters.
         Possible parameters are:
             1: X
@@ -234,88 +226,5 @@ class sr830():
             list: the values of the specified parameters
         """
 
-        commandString = "SNAP?" +  " {},"*len(parameters)
-        return self._visa_resource.query_ascii_values(commandString.format(*parameters))
-    
-    def dataTransfer(self, i):
-        self._visa_resource.write("FAST {}".format(i))
-        
-    def queryPoint(self, channel):
-        return self._visa_resource.query_ascii_values("TRCA ? {}".format(channel))
-
-    def getTimeConst(self):
-        const_dict = {0: '10 us',  10: '1 s',
-                      1: '30 us',  11: '3 s',
-                      2: '100 us', 12: '10 s',
-                      3: '300 us', 13: '30 s',
-                      4: '1 ms',   14: '100 s',
-                      5: '3 ms',   15: '300 s',
-                      6: '10 ms',  16: '1 ks',
-                      7: '30 ms',  17: '3 ks',
-                      8: '100 ms', 18: '10 ks',
-                      9: '300 ms', 19: '30 ks'}
-
-        const_index = self._visa_resource.query_ascii_values('OFLT?')[0]
-        return const_dict[const_index]
-
-		
-    def setTimeConst(self, const_index):
-        """Set the time constant of the amplifier.
-        Possible values:
-                      0: 10 us,      10: 1 s,
-                      1: 30 us,      11: 3 s,
-                      2: 100 us,     12: 10 s,
-                      3: 300 us,     13: 30 s,
-                      4: 1 ms,       14: 100 s,
-                      5: 3 ms,       15: 300 s,
-                      6: 10 ms,      16: 1 ks,
-                      7: 30 ms,      17: 3 ks,
-                      8: 100 ms,     18: 10 ks,
-                      9: 300 ms,     19: 30 ks}
-
-
-        Args:
-            const_index (int): the time constant to use
-        """
-        self._visa_resource.write("OFLT {}".format(const_index))
-		
-		
-    def setSensitivity(self, sens_index):
-        """Set the sensitivity of the amplifier.
-        See sr830.getSensitivity for dictionary of values.
-        								
-        Args:
-            sens_index (int): index of associated sensitivity
-                            (see above)
-        """
-        self._visa_resource.write("SENS {}".format(sens_index))
-		
-		
-    def getSensitivity(self):
-        """Get the current sensitivity value of the amplifier."""
-		
-        sens_dict = {0: "2 nV/fA",		13: "50 uV/pA",
-					  1: "5 nV/fA",		14: "100 uV/pA",
-					  2: "10 nV/fA",	15: "200 uV/pA",
-					  3: "20 nV/fA",	16: "500 uV/pA",
-					  4: "50 nV/fA",	17: "1 mV/nA",
-					  5: "100 nV/fA",	18: "2 mV/nA",
-					  6: "200 nV/fA",	19: "5 mV/nA",
-					  7: "500 nV/fA",	20: "10 mV/nA",
-					  8: "1 uV/pA",		21: "20 mV/nA",
-					  9: "2 uV/pA",		22: "50 mV/nA",
-					 10: "5 uV/pA",		23: "100 mV/nA",
-					 11: "10 uV/pA",	24: "200 mV/nA",
-					 12: "20 uV/pA",	25: "500 mV/nA",
-										26: "1 V/uA"}
-		
-        sens_index = self._visa_resource.query_ascii_values('SENS?')[0]
-        return sense_dict[sens_index]
-		
-
-    def getConfiguration(self):
-        freq = self.getFrequency()
-        ampl = self.getAmplitude()
-        tau = self.getTimeConst()
-        theta = self.getPhase()
-        return "Frequency: {:4} Hz - Amplitude: {:4} V - Phase {:4} - Time Constant: {}".format(freq, ampl, theta, tau)
+        commandString = "SNAP?" +  " {}," * len(values)
+        return self._visa_resource.query_ascii_values(commandString.format(*values))
