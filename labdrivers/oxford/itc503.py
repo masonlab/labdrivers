@@ -49,6 +49,7 @@ class itc503():
         self._visa_resource = resource_manager.open_resource("GPIB::%d" % GPIBaddr)
         self._visa_resource.read_termination = '\r'
 
+
     def setControl(self, state=3):
         """Set the LOCAL / REMOTE control state of the ITC 503
 
