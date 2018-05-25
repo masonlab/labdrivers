@@ -6,6 +6,11 @@ labdrivers.oxford
    :maxdepth: 2
 
 
+.. autoclass:: labdrivers.oxford.mercuryips.mercuryips
+    :members:
+    :undoc-members:
+
+
 .. autoclass:: labdrivers.oxford.itc503.itc503
     :members:
     :undoc-members:
