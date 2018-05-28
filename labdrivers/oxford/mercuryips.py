@@ -19,7 +19,7 @@ class MercuryIPS():
         Constructor for the MercuryIPS class.
         """
         try:
-            if mode in SUPPORTED_MODES:
+            if mode in MercuryIPS.SUPPORTED_MODES:
                 self.mode = mode
         except:
             raise RuntimeError('Mode is not currently supported.')
@@ -32,9 +32,6 @@ class MercuryIPS():
         self.bytes_to_read = bytes_to_read
 
         self.axis = 'GRPZ'
-        self.magnet_unclamped = False
-        self.field_setpoint = 0.0
-        self.field_ramp_rate = 0.0
 
 
     @property
@@ -47,15 +44,8 @@ class MercuryIPS():
         self.axis = MercuryIPS.AXIS_GROUP[value.lower()]
 
 
-    @property
-    def magnet_unclamped(self):
-        return self.magnet_unclamped
-
-
-    @magnet_unclamped.setter
-    def magnet_unclamped(self, value):
-        self.magnet_unclamped = value
-        if self.magnet_unclamped:
+    def magnet_unclamp(self, value):
+        if value:
             clamp_status = 'HOLD'
         else:
             clamp_status = 'CLMP'
@@ -63,31 +53,29 @@ class MercuryIPS():
         command = 'SET:DEV:' + self.axis + ':PSU:ACTN:' + clamp_status + '\n'
         response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
 
-
-    @property
-    def field_setpoint(self):
-        return self.field_setpoint
-
     
-    @field_setpoint.setter
-    def field_setpoint(self, value):
-        setpoint = STR_FORMAT.format(value)
+    def set_field_setpoint(self, value):
+        setpoint = MercuryIPS.STR_FORMAT.format(value)
+        command = 'SET:DEV:' + self.axis + ':PSU:SIG:FSET:' + setpoint + '\n'
+        response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
+
+
+    def get_field_setpoint(self):
+        setpoint = MercuryIPS.STR_FORMAT.format(value)
         command = 'READ:DEV:' + self.axis + ':PSU:SIG:FSET:' + setpoint + '\n'
         response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
-        self.field_setpoint = setpoint
 
 
-    @property
-    def field_ramp_rate(self):
-        return self.field_ramp_rate
-
-
-    @field_ramp_rate.setter
-    def field_ramp_rate(self, value):
-        setpoint = STR_FORMAT.format(value)
+    def get_field_ramp_rate(self):
+        setpoint = MercuryIPS.STR_FORMAT.format(value)
         command = 'READ:DEV:' + self.axis + ':PSU:SIG:FSET:' + setpoint + '\n'
         response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
-        self.field_ramp_rate = setpoint
+
+
+    def set_field_ramp_rate(self, value):
+        setpoint = MercuryIPS.STR_FORMAT.format(value)
+        command = 'SET:DEV:' + self.axis + ':PSU:SIG:FSET:' + setpoint + '\n'
+        response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
 
 
     def ramp_to_setpoint(self):
@@ -96,7 +84,12 @@ class MercuryIPS():
 
 
     def ramp_to_zero(self):
-        command = 'SET:DEV:' + self.axis[axis.lower()] + ':PSU:ACTN:RTOZ\n'
+        command = 'SET:DEV:' + self.axis + ':PSU:ACTN:RTOZ\n'
+        response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
+
+
+    def magnetic_field(self):
+        command = 'READ:DEV:' + self.axis + ':PSU:SIG:FLD\n'
         response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
 
 
