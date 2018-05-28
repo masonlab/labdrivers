@@ -2,7 +2,7 @@ import socket
 
 class Triton200():
 
-    def __init__(parameters):
+    def __init__(self, parameters):
         """
         Constructor for the Triton200 class.
 
@@ -27,24 +27,29 @@ class Triton200():
     @property
     def temperature(self):
         command = ('READ:DEV:T' + str(self.channel) + ':TEMP:SIG:TEMP\r\n').encode()
-        
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect(self.address)
-            s.settimeout(self.timeout)
-            s.sendall(command)
-            response = s.recv(self.bytes_to_read).decode()
+        response = self.query_and_receive(command)
 
         return # TODO: extract response
     
     @property
     def temperature_setpoint(self):
         command = ('READ:DEV:H' + str(self.channel) + 'HTR:SIG:POWR\r\n').encode()
+        response = self.query_and_receive(command)
 
+    @temperature_setpoint.setter
+    def temperature_setpoint(self, value):
+
+
+    def query_and_receive(self, command):
+        """
+        Queries the Oxford Triton 200 with the given command.
+
+        :param command: Specifies a read/write of a property.
+        """
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect(self.address)
             s.settimeout(self.timeout)
             s.sendall(command)
             response = s.recv(self.bytes_to_read).decode()
 
-    @temperature_setpoint.setter
-    def temperature_setpoint(self, value):
+        return response

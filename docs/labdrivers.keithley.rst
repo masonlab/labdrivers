@@ -6,5 +6,11 @@ labdrivers.keithley
     :members:
     :undoc-members:
 
+
+.. autoclass:: labdrivers.keithley.k2400.k2400
+    :members:
+    :undoc-members:
+
+
 .. toctree::
     :maxdepth: 1
