@@ -21,16 +21,11 @@ class k2400():
     SOURCES = ('voltage','current')
     MEASUREMENTS = ('voltage','current','resistance')
 
-    __init__(self, GPIBaddr=23):
+    def __init__(self, GPIBaddr=23):
 
         self._visa_resource = resource_manager.open_resource('GPIB::{}'.format(GPIBaddr))
         self._visa_resource_write('*RST')
-        self.source_type = None
-        self.source_value = None
-        self.measure_type = None
-        self.voltage_compliance = None
-        self.current_compliance = None
-        self.output = False
+
 
     @property
     def source_type(self):

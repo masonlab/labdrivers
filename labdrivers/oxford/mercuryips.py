@@ -31,8 +31,6 @@ class MercuryIPS():
         self.timeout = timeout
         self.bytes_to_read = bytes_to_read
 
-        self.axis = 'GRPZ'
-
 
     @property
     def axis(self):
