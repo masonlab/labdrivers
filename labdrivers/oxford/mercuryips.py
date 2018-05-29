@@ -1,4 +1,6 @@
 import socket
+from math import radians, sin, cos
+
 import visa
 
 class MercuryIPS():
@@ -31,49 +33,86 @@ class MercuryIPS():
         self.timeout = timeout
         self.bytes_to_read = bytes_to_read
 
+        self._axis = 'GRPZ'
+
 
     @property
     def axis(self):
-        return self.axis
+        return self._axis
 
 
     @axis.setter
     def axis(self, value):
-        self.axis = MercuryIPS.AXIS_GROUP[value.lower()]
-
-
-    def magnet_unclamp(self, value):
-        if value:
-            clamp_status = 'HOLD'
-        else:
-            clamp_status = 'CLMP'
-        
-        command = 'SET:DEV:' + self.axis + ':PSU:ACTN:' + clamp_status + '\n'
-        response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
+        self._axis = MercuryIPS.AXIS_GROUP[str(value).lower()]
 
     
-    def set_field_setpoint(self, value):
+    @property
+    def field_setpoint(self):
+        noun = 'DEV:' + self.axis + ':PSU:SIG:FSET'
+        command = 'READ:' + noun + '\n'
+        response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
+        return self.extract_value(response, noun)
+
+
+    @field_setpoint.setter
+    def field_setpoint(self, value):
         setpoint = MercuryIPS.STR_FORMAT.format(value)
+        self._field_setpoint = setpoint
         command = 'SET:DEV:' + self.axis + ':PSU:SIG:FSET:' + setpoint + '\n'
         response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
 
 
-    def get_field_setpoint(self):
-        setpoint = MercuryIPS.STR_FORMAT.format(value)
-        command = 'READ:DEV:' + self.axis + ':PSU:SIG:FSET:' + setpoint + '\n'
+    @property
+    def field_ramp_rate(self):
+        noun = 'DEV:' + self.axis + ':PSU:SIG:RFST'
+        command = 'READ:' + noun + '\n'
+        response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
+        return self.extract_value(response, noun)
+
+
+    @field_ramp_rate.setter
+    def field_ramp_rate(self, value):
+        ramp_rate = MercuryIPS.STR_FORMAT.format(value)
+        command = 'SET:DEV:' + self.axis + ':PSU:SIG:RFST:' + ramp_rate + '\n'
         response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
 
 
-    def get_field_ramp_rate(self):
+    @property
+    def current_setpoint(self):
+        noun = 'DEV:' + self.axis + ':PSU:SIG:CSET'
+        command = 'READ:' + noun + '\n'
+        response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
+        return self.extract_value(response, noun)
+
+
+    @current_setpoint.setter
+    def current_setpoint(self, value):
         setpoint = MercuryIPS.STR_FORMAT.format(value)
-        command = 'READ:DEV:' + self.axis + ':PSU:SIG:FSET:' + setpoint + '\n'
+        command = 'SET:DEV:' + self.axis + ':PSU:SIG:CSET' + setpoint + '\n'
         response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
 
 
-    def set_field_ramp_rate(self, value):
-        setpoint = MercuryIPS.STR_FORMAT.format(value)
-        command = 'SET:DEV:' + self.axis + ':PSU:SIG:FSET:' + setpoint + '\n'
+    @property
+    def current_ramp_rate(self):
+        noun = 'DEV:' + self.axis + ':PSU:SIG:RCST'
+        command = 'READ:' + noun + '\n'
         response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
+        return self.extract_value(response, noun)
+
+
+    @current_ramp_rate.setter
+    def current_ramp_rate(self, value):
+        ramp_rate = MercuryIPS.STR_FORMAT.format(value)
+        command = 'SET:DEV:' + self.axis + ':PSU:SIG:RCST' + ramp_rate + '\n'
+        response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
+
+
+    @property
+    def magnetic_field(self):
+        noun = 'DEV:' + self.axis + ':PSU:SIG:FLD'
+        command = 'READ:' + noun + '\n'
+        response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
+        return self.extract_value(response, noun)
 
 
     def ramp_to_setpoint(self):
@@ -86,9 +125,41 @@ class MercuryIPS():
         response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
 
 
-    def magnetic_field(self):
-        command = 'READ:DEV:' + self.axis + ':PSU:SIG:FLD\n'
+    def output_on(self):
+        command = 'SET:DEV:' + self.axis + ':PSU:ACTN:HOLD\n'
         response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
+
+
+    def output_off(self):
+        command = 'SET:DEV:' + self.axis + ':PSU:ACTN:CLMP\n'
+        response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
+
+
+    #  #  #  #  #  #  #  #  #  #  #
+    #  User-requested functions   #
+    #  #  #  #  #  #  #  #  #  #  #
+
+
+    def circular_sweep(self, amplitude, number_points, axes = ('x','y')):
+        """
+        Automates a sweep in which a magnetic field points along a
+        specified circle.
+
+        :param amplitude: The magnitude of the vector sum of the fields
+        in the circle.
+
+        :param number_points: The number of evenly-spaced points in the circle
+        that the magnetic field points to in the sweep.
+
+        :param axes: A tuple of strings that indicate which axes will be
+        sweeping in the circle.
+        """
+        angle_increment = 360.0 / number_points
+
+
+    #  #  #  #  #  #  #  #
+    #  Query functions   #
+    #  #  #  #  #  #  #  #
 
 
     def query_ip(self, command):
@@ -107,3 +178,9 @@ class MercuryIPS():
         instr.close()
 
         return response
+
+
+    def extract_value(self, response, noun):
+        expected_response = 'STAT:' + noun + ':'
+        value = float(response.replace(expected_response, '').strip('\n'))
+        return value
