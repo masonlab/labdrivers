@@ -135,28 +135,6 @@ class MercuryIPS():
         response = MercuryIPS.QUERY_AND_RECEIVE[self.mode](command)
 
 
-    #  #  #  #  #  #  #  #  #  #  #
-    #  User-requested functions   #
-    #  #  #  #  #  #  #  #  #  #  #
-
-
-    def circular_sweep(self, amplitude, number_points, axes = ('x','y')):
-        """
-        Automates a sweep in which a magnetic field points along a
-        specified circle.
-
-        :param amplitude: The magnitude of the vector sum of the fields
-        in the circle.
-
-        :param number_points: The number of evenly-spaced points in the circle
-        that the magnetic field points to in the sweep.
-
-        :param axes: A tuple of strings that indicate which axes will be
-        sweeping in the circle.
-        """
-        angle_increment = 360.0 / number_points
-
-
     #  #  #  #  #  #  #  #
     #  Query functions   #
     #  #  #  #  #  #  #  #
