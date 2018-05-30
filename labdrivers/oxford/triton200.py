@@ -80,12 +80,12 @@ class triton200():
         response = self.query_and_receive(command)
 
 
-    def ramp_on(self):
+    def controlled_ramp_on(self):
         command = 'SET:DEV:T' + str(self._temperature_channel) + 'TEMP:LOOP:RAMP:ENAB:ON\r\n'
         response = self.query_and_receive(command)
 
 
-    def ramp_off(self):
+    def controlled_ramp_off(self):
         command = 'SET:DEV:T' + str(self._temperature_channel) + 'TEMP:LOOP:RAMP:ENAB:OFF\r\n'
         response = self.query_and_receive(command)
 
@@ -98,6 +98,14 @@ class triton200():
     def turbo_off(self):
         command = 'SET:DEV:TURB' + self._turbo_channel + ':PUMP:SIG:STATE:OFF\r\n'
         response = self.query_and_receive(command)
+
+
+    def ramp_to_base_temperature(self):
+        pass
+
+
+    def ramp_to_temperature_setpoint(self):
+        pass
 
 
     def query_and_receive(self, command):
