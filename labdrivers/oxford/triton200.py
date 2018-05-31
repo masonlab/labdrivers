@@ -100,14 +100,6 @@ class triton200():
         response = self.query_and_receive(command)
 
 
-    def ramp_to_base_temperature(self):
-        pass
-
-
-    def ramp_to_temperature_setpoint(self):
-        pass
-
-
     def query_and_receive(self, command):
         """
         Queries the Oxford Triton 200 with the given command.

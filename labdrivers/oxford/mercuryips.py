@@ -3,7 +3,7 @@ from math import radians, sin, cos
 
 import visa
 
-class MercuryIPS():
+class mercury_ips():
 
     PORT_NO = 7020
     AXIS_GROUP = {  'x': 'GRPX',
