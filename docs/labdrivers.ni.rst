@@ -6,6 +6,6 @@ labdrivers.ni
    :maxdepth: 2
 
 
-.. autoclass:: labdrivers.ni.bnc2110.bnc2110
+.. autoclass:: labdrivers.ni.nidaq.nidaq
     :members:
     :undoc-members:

@@ -32,11 +32,10 @@ except OSError:
     logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
 
 
-class sr830():
+class sr830:
     """A class to interface with the SR830 lockin amplifier
 
-    Args:
-        GPIBaddr: the GPIB address of the instrument
+    :param GPIBaddr: the GPIB address of the instrument
     """
     TIME_CONSTANT = { 0: '10 us',  10: '1 s',
                       1: '30 us',  11: '3 s',
@@ -75,6 +74,9 @@ class sr830():
 
     @property
     def frequency(self):
+        """
+        The frequency of the output signal.
+        """
         return self._visa_resource.query_ascii_values('FREQ?')[0]
 
 
@@ -85,23 +87,26 @@ class sr830():
 
     @property
     def input(self):
-        return self._visa_resource.query_ascii_values('ISRC?')
-
-
-    @input.setter
-    def input(self, value):
         """
-        Sets the SR830 input value. Possible values:
+        The input on the SR830 machine. Possible values:
             0: A
             1: A-B
             2: I (1 MOhm)
             3: I (100 MOhm)
         """
+        return self._visa_resource.query_ascii_values('ISRC?')
+
+
+    @input.setter
+    def input(self, value):
         self._visa_resource.write("ISRC {}".format(value))
 
 
     @property
     def phase(self):
+        """
+        The phase of the output relative to the input.
+        """
         return self._visa_resource.query_ascii_values('PHAS?')[0]
 
 
@@ -112,6 +117,9 @@ class sr830():
     
     @property
     def amplitude(self):
+        """
+        The amplitude of the voltage output.
+        """
         return self._visa_resource.query_ascii_values('SLVL?')[0]
 
     
@@ -122,6 +130,9 @@ class sr830():
 
     @property
     def time_constant(self):
+        """
+        The time constant of the SR830.
+        """
         const_index = self._visa_resource.query_ascii_values('OFLT?')[0]
         return TIME_CONSTANT[const_index]
 
@@ -228,3 +239,25 @@ class sr830():
 
         commandString = "SNAP?" +  " {}," * len(values)
         return self._visa_resource.query_ascii_values(commandString.format(*values))
+
+
+    def auto_gain(self):
+        """
+        Mimics pressing the Auto Gain button. Does nothing if the time
+        constant is more than 1 second.
+        """
+        self._visa_resource.query_ascii_values("AGAN")
+
+
+    def auto_reserve(self):
+        """
+        Mimics pressing the Auto Reserve button.
+        """
+        self._visa_resource.query_ascii_values("ARSV")
+
+
+    def auto_phase(self):
+        """
+        Mimics pressing the Auto Phase button.
+        """
+        self._visa_resource.query_ascii_values("APHS")

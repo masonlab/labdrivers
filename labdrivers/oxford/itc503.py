@@ -49,7 +49,8 @@ class itc503():
         self._visa_resource = resource_manager.open_resource("GPIB::%d" % GPIBaddr)
         self._visa_resource.read_termination = '\r'
 
-    def setControl(self, state=3):
+
+    def setControl(self, unlocked=1, remote=1):
         """Set the LOCAL / REMOTE control state of the ITC 503
 
         0 - Local & Locked (default state)
@@ -63,8 +64,8 @@ class itc503():
         Args:
             state(int): the state in which to place the ITC 503
         """
-        assert type(state) == int, 'argument must be integer'
-        assert state in [0,1,2,3], 'argument must be one of [0,1,2,3]'
+        state_bit = str(remote) + str(unlocked)
+        state = int(state_bit, 2)
 
         self._visa_resource.write("$C{}".format(state))
 

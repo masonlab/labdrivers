@@ -4,7 +4,7 @@ import numpy as np
 import PyDAQmx
 from PyDAQmx import Task
 
-class bnc2110:
+class nidaq():
     """Class to interface with a National Instruments BNC-2110 DAC
     
     Built on top of PyDAQmx. 
@@ -17,14 +17,30 @@ class bnc2110:
     
     def __init__(self, device='Dev1'):
         self.device = device
-        
-        
+        self.channel = None
+    
+
+    @property
+    def device(self):
+        return self.device
+
+
+    @property
+    def channel(self):
+        return self.channel
+
+    
+    @channel.setter
+    def channel(self, value):
+        self.channel = value.lower()
+    
+
     def reset(self):
         """Reset the device. Equivalent to <R click> -> Reset in NI MAX"""
         PyDAQmx.DAQmxResetDevice(self.device)
     
     
-    def setVoltageOutput(self, channel='ao1', output=0):
+    def output_voltage(self, output=0):
         """Set the voltage output level of `channel` to `output`
         
         Args:
@@ -41,7 +57,7 @@ class bnc2110:
         #                                 float64 maxVal, 
         #                                 int32 units, 
         #                                 const char customScaleName[]);
-        task.CreateAOVoltageChan('/{}/{}'.format(self.device, channel),
+        task.CreateAOVoltageChan('/{}/{}'.format(self.device, self.channel),
                                  '',
                                  -10.0,
                                  10.0,
@@ -62,7 +78,7 @@ class bnc2110:
         task.StopTask()
         
         
-    def setCurrentOutput(self, channel='ao1', output=0):
+    def output_current(self, output=0):
         """Set the current output level of `channel` to `output`
         
         Args:
@@ -79,7 +95,7 @@ class bnc2110:
         #                                 float64 maxVal, 
         #                                 int32 units, 
         #                                 const char customScaleName[]);
-        task.CreateAOCurrentChan('/{}/{}'.format(self.device, channel),
+        task.CreateAOCurrentChan('/{}/{}'.format(self.device, self.channel),
                                  '',
                                  -10.0,
                                  10.0,
@@ -100,7 +116,7 @@ class bnc2110:
         task.StopTask()
 
 
-    def readVoltageInput(self, channel='ai1', minVal=-10.0, maxVal=10.0):
+    def read_voltage(self, minVal=-10.0, maxVal=10.0):
         """Read the voltage input level of `channel`
         
         Using narrow bounds (with minVal and maxVal) will improve accuracy
@@ -124,7 +140,7 @@ class bnc2110:
         #                                 float64 maxVal, 
         #                                 int32 units, 
         #                                 const char customScaleName[]);
-        task.CreateAIVoltageChan('/{}/{}'.format(self.device, channel),
+        task.CreateAIVoltageChan('/{}/{}'.format(self.device, self.channel),
                                  '',
                                  PyDAQmx.DAQmx_Val_Cfg_Default,
                                  minVal,
@@ -151,7 +167,7 @@ class bnc2110:
         return measured_point.value
 
 
-    def readCurrentInput(self, channel='ai1', minVal=-10.0, maxVal=10.0):
+    def read_current(self, minVal=-10.0, maxVal=10.0):
         """Read the current input level of `channel`
         
         Using narrow bounds (with minVal and maxVal) will improve accuracy
@@ -177,7 +193,7 @@ class bnc2110:
         #                                 int32 shuntResistorLoc, 
         #                                 float64 extShuntResistorVal, 
         #                                 const char customScaleName[]);
-        task.CreateAICurrentChan('/{}/{}'.format(self.device, channel),
+        task.CreateAICurrentChan('/{}/{}'.format(self.device, self.channel),
                                  '',
                                  PyDAQmx.DAQmx_Val_Cfg_Default,
                                  -10.0,
