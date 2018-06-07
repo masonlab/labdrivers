@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # import drivers for experiment
-from labdrivers.ni import bnc2110
+from labdrivers.ni import nidaq
 from labdrivers.keithley import keithley2400
 from labdrivers.srs import sr830
 
