@@ -10,35 +10,46 @@ to gate voltages.
 
 import visa
 
-try:
-    # the pyvisa manager we'll use to connect to the GPIB resources
-    resource_manager = visa.ResourceManager()
-except OSError:
-    logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
-
 class k2400():
 
-    SOURCES = ('voltage','current')
-    MEASUREMENTS = ('voltage','current','resistance')
+    def __init__(self, gpib_addr=23):
 
-    def __init__(self, GPIBaddr=23):
+        self._gpib_addr = str(gpib_addr)
+        
+        try:
+            self._resource_manager = visa.ResourceManager()
+        except OSError:
+            logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
 
-        self._visa_resource = resource_manager.open_resource('GPIB::{}'.format(GPIBaddr))
-        self._visa_resource_write('*RST')
+        self._instrument = None
+
+
+    def enable_remote(self):
+        self._instrument = self._resource_manager.open_resource("GPIB::{}".format(self.gpib_addr))
+
+
+    def disable_remote(self):
+        self._instrument.close()
+
+
+    @property
+    def gpib_addr(self):
+        return self._gpib_addr
 
 
     @property
     def source_type(self):
-        return self.source_type
+        response = self._instrument.query("SOURCE:FUNCTION:MODE?").strip()
+        SOURCE_TYPE = {'VOLT': 'voltage', 'CURR': 'current'}
+        return SOURCE_TYPE['response']
 
 
     @source_type.setter
     def source_type(self, value):
-        source_type = value.lower()
-        if source in SOURCES:
-            self.source_type = source_type
+        if value.upper in ("VOLTAGE","CURRENT"):
+            self._instrument.write("SOURCE:FUNCTION:MODE {}".format(value.upper()))
         else:
-            raise RuntimeError('Not a valid source.')
+            raise RuntimeError('Not a valid source type.')
 
 
     @property
@@ -57,43 +68,46 @@ class k2400():
 
     @property
     def measure_type(self):
-        return self.measure_type
+        MEASURE_TYPE = {'VOLT:DC': 'voltage', 'CURR:DC': 'current', 'RES': 'resistance'}
+        measure_type_response = self._instrument.query("SENSE:FUNCTION?").strip().replace('\"','').split(',')[-1]
+        return MEASURE_TYPE[response]
 
 
     @measure_type.setter
     def measure_type(self, value):
-        measure_type = value.lower()
-        if measure_type in MEASUREMENTS:
-            self.measure_type = measure_type
+        MEASURE_TYPE = {'voltage':'\'VOLTAGE:DC\'', 'current':'\'CURRENT:DC\'', 'resistance':'RESISTANCE'}
+        if value.lower() in MEASURE_TYPE:
+            self._instrument.write("SENSE:FUNCTION:ON {}".format(MEASURE_TYPE[value.lower()]))
         else:
             raise RuntimeError('Not a valid measurement type.')
-
+    
 
     @property
     def voltage_compliance(self):
-        return self.voltage_compliance
+        response = self._instrument.query("SENS:VOLT:PROT:LEV?").strip()
+        return float(response)
 
-    
+
     @voltage_compliance.setter
-    def voltage_compliance(self, limit):
-        self.voltage_compliance = limit
-        self._visa_resource.write("SENS:VOLT:PROT " + str(limit))
+    def voltage_compliance(self, value):
+        self._instrument.write("SENS:VOLT:PROT {}".format(str(value)))
 
 
     @property
     def current_compliance(self):
-        return self.current_compliance
+        response = self._instrument.query("SENS:CURR:PROT:LEV?").strip()
+        return float(response)
 
-    
     @current_compliance.setter
-    def current_compliance(self, limit):
-        self.current_compliance = limit
-        self._visa_resource.write("SENS:CURR:PROT " + str(limit))
+    def current_compliance(self, value):
+        self._instrument.write("SENS:CURR:PROT {}".format(str(value)))
 
 
     @property
     def output(self):
-        return self.output
+        OUTPUT = {'0':'off', '1':'on'}
+        response = self._instrument.query("OUTPUT?").strip()
+        return OUTPUT[response]
 
 
     @output.setter
