@@ -70,7 +70,77 @@ class sr830:
             GPIBaddr (int): The GPIB address of the instrument.
         """
         self._visa_resource = resource_manager.open_resource("GPIB::%d" % GPIBaddr)
-    
+
+
+    @property
+    def sync_filter(self):
+        """
+        The state of the sync filter (< 200 Hz).
+        """
+        return self._visa_resource.query_ascii_values('SYNC?')[0]
+
+
+    @sync_filter.setter
+    def sync_filter(self, value):
+        if isInstance(value, bool):
+            self._visa_resource_query_ascii_values('SYNC {}'.format(int(value)))
+        else:
+            raise RuntimeError('Sync filter input expects [True|False].')
+
+
+    @property
+    def low_pass_filter_slope(self):
+        """
+        The low pass filter slope in units of dB/octave. The choices are:
+
+         i   slope(dB/oct) 
+        ---  -------------
+         0         6
+         1        12
+         2        18
+         3        24
+        """
+        return self._visa_resource.query_ascii_values('OSFL?')[0]
+
+
+    @low_pass_filter_slope.setter
+    def low_pass_filter_slope(self, value):
+        """
+        Sets the low pass filter slope.
+
+        :param value: The slope in units of dB/oct.
+        """
+        if value in (6, 12, 18, 24):
+            self._visa_resource.query_ascii_values('OSFL {}'.format())
+        else:
+            raise RuntimeError('Low pass filter slope only accepts [6|12|18|24].')
+
+
+    @property
+    def reserve(self):
+        """
+        The reserve mode of the SR830.
+        """
+        return self._visa_resource.query_ascii_values('RMOD?')[0]
+
+
+    @reserve.setter
+    def reserve(self, value):
+        if isInstance(value, str):
+            mode = value.lower()
+        elif isInstance(value, int):
+            mode = value
+        else:
+            raise RuntimeError('Reserve expects a string or integer argument.')
+        
+        modes_dict = {  'hi': 0, 'high': 0, 'high reserve': 0, 0: 0
+                        'normal': 1, 1: 1,
+                        'lo': 2, 'low': 2, 'low noise': 2, 2: 2}
+        if mode in modes_dict.keys():
+            self._visa_resource.query_ascii_values('RMOD {}'.format(mode))
+        else:
+            raise RuntimeError('Incorrect key for reserve.')
+
 
     @property
     def frequency(self):
@@ -261,3 +331,12 @@ class sr830:
         Mimics pressing the Auto Phase button.
         """
         self._visa_resource.query_ascii_values("APHS")
+
+
+    def auto_offset(self, parameter):
+        """
+        Automatically offsets the given voltage parameter.
+
+        :param parameter: A string from ['x'|'y'|'r'], case insensitive.
+        """
+        self._visa_resource.query_ascii_values("AOFF {}".format(parameter.upper()))

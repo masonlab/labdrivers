@@ -1,11 +1,23 @@
 """
-An alternate class definition for the Keithley 2400.
+Author: pbnjeff89 (Jeff Damasco)
+Version: 2.0
 
-This is another module to use if you wish to use "attributes" to
-run your program. It also does not use pandas to pull data and
-(temporarily) does not use the TRACe functionality because the
-utility of the Keithley 2400 (for the Mason Lab) is limited mainly
-to gate voltages.
+- More control over individual components
+- No more glitches/annoyances with -420 errors due to unterminated queries
+- No more use of pandas
+
+Some of this class structure was inspired by large chunks of code from
+Henry's old class. I chose to move in a slightly different direction
+because the old class was a bit presumptuous (which I do not mean in a
+judgmental or malevolent way!!!) about what the Keithley was used
+for. I think the old class was used for probe station testing, but
+most of the measurements that have publishable data will only use the
+Keithley for gates and actual voltage/current/resistance measurements
+are taken with lock-ins.
+
+Pandas was removed because there was some noticeable slowdown during
+experiments. This should also help in a marginal way when installing
+with pip or Anaconda.
 """
 
 import visa
@@ -98,7 +110,7 @@ class keithley2400():
     @property
     def resistance_ohms_mode(self):
         MODES = {'MAN': 'manual', 'AUTO': 'auto'}
-        response = self._instrument.query('SENS:RES:mode?').strip()
+        response = self._instrument.query('sense:resistance:mode?').strip()
         return MODES[response]
 
 
@@ -106,7 +118,7 @@ class keithley2400():
     def resistance_ohms_mode(self, value):
         MODES = {'manual': 'MAN', 'auto': 'AUTO'}
         if value.lower() in MODES.keys():
-            self._instrument.write('SENS:RES:mode {}'.format(MODES[value.lower()]))
+            self._instrument.write('sense:resistance:mode {}'.format(MODES[value.lower()]))
         else:
             raise RuntimeError('Expected a value from [\'manual\'|\'auto\']')
 
@@ -122,7 +134,21 @@ class keithley2400():
         if isInstance(value, int) or isInstance(value, float):
             self._instrument.write('sense:resistance:range {}'.format(value))
         else:
-            RuntimeError('Expected an int or float.')
+            raise RuntimeError('Expected an int or float.')
+
+
+    @property
+    def four_wire_sensing(self):
+        response = self._instrument.query('system:rsense?').strip()
+        return bool(int(response))
+
+
+    @four_wire_sensing.setter
+    def four_wire_sensing(self, value):
+        if isInstance(value, bool):
+            self._instrument.write('system:rsense {}'.format(int(value)))
+        else:
+            raise RuntimeError('Expected boolean value.')
 
 
     # Voltage sensing and compliance
@@ -139,7 +165,7 @@ class keithley2400():
         if isInstance(value, int) or isInstance(value, float):
             self._instrument.write('sense:voltage:range {}'.format(value))
         else:
-            RuntimeError('Expected an int or float.')
+            raise RuntimeError('Expected an int or float.')
 
 
     @property
@@ -150,7 +176,10 @@ class keithley2400():
 
     @voltage_compliance.setter
     def voltage_compliance(self, value):
-        self._instrument.write("SENS:VOLT:PROT {}".format(str(value)))
+        if 200e-6 <= value <= 210:
+            self._instrument.write("SENS:VOLT:PROT {}".format(str(value)))
+        else:
+            raise RuntimeError('Voltage compliance cannot be set. Value must be between 200 \u03BC' + 'V and 210 V.')
 
 
     def within_voltage_compliance(self):
@@ -183,7 +212,10 @@ class keithley2400():
 
     @current_compliance.setter
     def current_compliance(self, value):
-        self._instrument.write("SENS:CURR:PROT {}".format(str(value)))
+        if 1e-9 <= value <= 1.05:
+            self._instrument.write("SENS:CURR:PROT {}".format(str(value)))
+        else:
+            raise RuntimeError('Current compliance cannot be set. Value must be between 1 nA and 1.05 A.')
 
 
     def within_current_compliance(self):
@@ -223,6 +255,13 @@ class keithley2400():
         MODES = {'high impedance': 'HIMP', 'himp': 'HIMP', 'normal': 'NORM', 'norm': 'NORM',
                  'zero': 'ZERO', '0': 'ZERO', 'guard': 'GUARD'}
         self._instrument.write('OUTP:SMOD {}'.format(MODES[value.lower()])
+
+
+    # Data acquisition
+
+    def read(self):
+        response = self._instrument.query('read?').strip()
+        return float(response)
 
 
     # Trace functions
