@@ -28,7 +28,7 @@ except OSError:
     logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
 
     
-class LS332():
+class ls332():
 
     CHANNELS = ('A','B')
 
