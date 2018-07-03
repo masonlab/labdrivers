@@ -264,9 +264,76 @@ class keithley2400():
         return float(response)
 
 
+    # Trigger functions
+
+
+    @property
+    def trace_delay(self):
+        """The amount of time the SourceMeter waits after the trigger to perform Device Action."""
+        return float(self._instrument.query('trigger:delay?').strip())
+
+
+    @trace_delay.setter
+    def trace_delay(self, delay):
+        if isInstance(delay, float) or isInstance(delay, int):
+            if 0.0 <= delay <= 999.9999:
+                self._instrument.write('trigger:delay {}'.format(delay))
+            else:
+                raise RuntimeError('Expected delay to be between 0.0 and 999.9999 seconds.')
+        else:
+            raise RuntimeError('Expected delay to be an int or float.')
+
+
+    @property
+    def trigger(self):
+        TRIGGERS =  {   'IMM': 'immediate',         'TLIN': 'trigger link',         'TIM': 'timer',
+                        'MAN': 'manual',            'BUS': 'bus trigger',           'NST': 'low SOT pulse',
+                        'PST': 'high SOT pulse',    'BST': 'high or low SOT pulse'
+                    }
+        return TRIGGERS[self._instrument.query('trigger:source?')]
+
+
+    @trigger.setter
+    def trigger(self, trigger):
+        TRIGGERS = {
+            'imm': 'IMM', 'immediate': 'IMM',
+            'tlin': 'TLIN', 'tlink': 'TLIN', 'trigger link': 'TLIN',
+            'tim': 'TIM', 'timer': 'TIM',
+            'man': 'MAN', 'manual': 'MAN',
+            'bus': 'BUS', 'bus trigger': 'BUS',
+            'nst': 'NST', 'low SOT pulse': 'NST',
+            'pst': 'PST', 'high SOT pulse': 'PST',
+            'bst': 'BST', 'high or low SOT pulse': 'BST'
+        }
+        if trigger.lower() in TRIGGERS.keys():
+            self._instrument.query('trigger:source {}'.format(trigger))
+        else:
+            raise RuntimeError('Unexpected trigger input. See documentation for details.')
+
+
     # Trace functions
 
     
+    @property
+    def num_readings_in_buffer(self):
+        """The number of readings stored in buffer."""
+        return int(self._instrument.query('trace:points:actual?').strip())
+
+
+    @property
+    def trace_points(self):
+        """Buffer size."""
+        return int(self._instrument.query('trace:points?').strip())
+
+
+    @trace_points.setter
+    def trace_points(self, num_points):
+        if isInstance(num_points, int):
+            self._instrument.write('trace:points {}'.format(num_points))
+        else:
+            raise RuntimeError('Expected type of num_points: int.')
+
+
     def retrieve_trace(self):
         trace = self._instrument.query('trace:data?').strip().split(',')
         trace = [float(x) for x in trace]
@@ -274,3 +341,29 @@ class keithley2400():
 
     def clear_trace(self):
         self._instrument.query('trace:clear')
+
+    
+    # Common commands
+
+
+    def clear_status(self):
+        """Clears all event registers and Error Queue."""
+        self._instrument.write('*cls')
+
+
+    def identify(self):
+        """Returns manufacturer, model number, serial number, and firmware revision levels."""
+        response = self._instrument.write('*idn?')
+        return  {   'manufacturer': response[0],
+                    'model': response[1],
+                    'serial number': response[2],
+                    'firmware revision level': response[3]
+                }
+
+
+    def send_bus_trigger(self):
+        """Sends bus trigger to SourceMeter."""
+        self._instrument.write('*trg')
+
+
+    
