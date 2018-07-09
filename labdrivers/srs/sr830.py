@@ -100,7 +100,9 @@ class sr830:
          2        18
          3        24
         """
-        return self._visa_resource.query_ascii_values('OSFL?')[0]
+        response = self._visa_resource.query_ascii_values('OSFL?')[0]
+        slope = {'0': '6 dB/oct', '1': '12 dB/oct', '2': '18 dB/oct', '3': '24 dB/oct'}
+        return slope[response]
 
 
     @low_pass_filter_slope.setter
@@ -111,7 +113,8 @@ class sr830:
         :param value: The slope in units of dB/oct.
         """
         if value in (6, 12, 18, 24):
-            self._visa_resource.query_ascii_values('OSFL {}'.format())
+            slope = {6: '0', 12: '1', 18: '2', 24: '3'}
+            self._visa_resource.query_ascii_values('OSFL {}'.format(slope[value]))
         else:
             raise RuntimeError('Low pass filter slope only accepts [6|12|18|24].')
 
@@ -121,7 +124,9 @@ class sr830:
         """
         The reserve mode of the SR830.
         """
-        return self._visa_resource.query_ascii_values('RMOD?')[0]
+        reserve = {'0': 'high', '1': 'normal', '2': 'low noise'}
+        response = self._visa_resource.query_ascii_values('RMOD?')[0]
+        return reserve[response]
 
 
     @reserve.setter
@@ -152,7 +157,10 @@ class sr830:
 
     @frequency.setter
     def frequency(self, value):
-        self._visa_resource.write("FREQ {}".format(value))
+        if 0.001 <= value <= 102000:
+            self._visa_resource.write("FREQ {}".format(value))
+        else:
+            raise RuntimeError('Valid frequencies are between 0.001 Hz and 102 kHz.')
     
 
     @property
@@ -168,8 +176,22 @@ class sr830:
 
 
     @input.setter
-    def input(self, value):
-        self._visa_resource.write("ISRC {}".format(value))
+    def input(self, input_value):
+        input = {   '0': 0, 0:0, 'A': 0,
+                    '1': 1, 1:1, 'A-B': 1, 'DIFFERENTIAL': 1,
+                    '2': 2, 2:2, 'I1': 2, 'I1M': 2, 'I1MOHM': 2,
+                    '3': 3, 3:3, 'I100': 3, 'I100M': 3, 'I100MOHM': 3
+                }
+        if isInstance(input_value, str):
+            query = input_value.upper().replace('(','').replace(')','').replace(' ','')
+        else:
+            query = input_value
+
+        if query in input.keys():
+            command = input[query]
+            self._visa_resource.write("ISRC {}".format(command))
+        else:
+            raise RuntimeError('Unexpected input for SR830 input command.')
 
 
     @property
@@ -182,8 +204,11 @@ class sr830:
 
     @phase.setter
     def phase(self, value):
-        self._visa_resource.write("PHAS {}".format(value))
-
+        if (isInstance(value, float) or isInstance(value, int) and -360.0 <= value <= 729.99):
+            self._visa_resource.write("PHAS {}".format(value))
+        else:
+            raise RuntimeError('Given phase is out of range for the SR830. Should be between -360.0 and 729.99.')
+    
     
     @property
     def amplitude(self):
@@ -195,7 +220,10 @@ class sr830:
     
     @amplitude.setter
     def amplitude(self, value):
-        self._visa_resource.write("SLVL {}".format(value))
+        if 0.004 <= value <= 5.0:
+            self._visa_resource.write("SLVL {}".format(value))
+        else:
+            raise RuntimeError('Given amplitude is out of range. Expected 0.004 to 5.0 V.')
 
 
     @property
