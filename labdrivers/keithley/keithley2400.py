@@ -40,6 +40,16 @@ class keithley2400():
         self._instrument = None
 
 
+    def __enter__(self):
+        '''Opens handle for Keithley 2400 Sourcemeter.'''
+        self._instrument = self._resource_manager.open_resource("GPIB::{}".format(self.gpib_addr))
+
+
+    def __exit__(self):
+        '''Closes handle for Keithley 2400 Sourcemeter.'''
+        self._instrument.close()
+
+
     def enable_remote(self):
         '''Opens a handle for the Keithley 2400 Sourcemeter.'''
         self._instrument = self._resource_manager.open_resource("GPIB::{}".format(self.gpib_addr))
@@ -68,8 +78,12 @@ class keithley2400():
 
     @source_type.setter
     def source_type(self, value):
-        if value.upper() in ("VOLTAGE","CURRENT"):
-            self._instrument.write("source:function:mode {}".format(value.upper()))
+        if value.lower() == 'voltage' or value.lower() == 'v':
+            source = 'voltage'
+            self._instrument.write("source:function:mode {}".format(source.lower()))
+        elif value.lower() == 'current' or value.lower() == 'i':
+            source = 'current'
+            self._instrument.write('source:function:mode {}'.format(source.lower()))
         else:
             raise RuntimeError('Not a valid source type.')
 

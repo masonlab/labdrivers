@@ -25,12 +25,6 @@ logger = logging.getLogger(__name__)
 # added so that log messages show up in Jupyter notebooks
 logger.addHandler(logging.StreamHandler())
 
-try:
-    # the pyvisa manager we'll use to connect to the GPIB resources
-    resource_manager = visa.ResourceManager()
-except OSError:
-    logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
-
 
 class sr830:
     """A class to interface with the SR830 lockin amplifier
@@ -69,7 +63,30 @@ class sr830:
         Args:
             GPIBaddr (int): The GPIB address of the instrument.
         """
-        self._visa_resource = resource_manager.open_resource("GPIB::%d" % GPIBaddr)
+        try:
+            # the pyvisa manager we'll use to connect to the GPIB resources
+            resource_manager = visa.ResourceManager()
+        except OSError:
+            logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
+        
+        self._gpib_addr = GPIBaddr
+        self._instrument = None
+
+
+    def __enter__(self):
+        self._instrument = resource_manager.open_resource("GPIB::%d" % self._gpib_addr)
+
+
+    def __exit__(self):
+        self._instrument.close()
+
+
+    def enable_remote(self):
+        self._instrument = resource_manager.open_resource("GPIB::%d" % self._gpib_addr)
+
+
+    def disable_remote(self):
+        self._instrument.close()
 
 
     @property
@@ -77,13 +94,13 @@ class sr830:
         """
         The state of the sync filter (< 200 Hz).
         """
-        return self._visa_resource.query_ascii_values('SYNC?')[0]
+        return self._instrument.query_ascii_values('SYNC?')[0]
 
 
     @sync_filter.setter
     def sync_filter(self, value):
         if isInstance(value, bool):
-            self._visa_resource_query_ascii_values('SYNC {}'.format(int(value)))
+            self._instrument.query_ascii_values('SYNC {}'.format(int(value)))
         else:
             raise RuntimeError('Sync filter input expects [True|False].')
 
@@ -100,7 +117,7 @@ class sr830:
          2        18
          3        24
         """
-        response = self._visa_resource.query_ascii_values('OSFL?')[0]
+        response = self._instrument.query_ascii_values('OSFL?')[0]
         slope = {'0': '6 dB/oct', '1': '12 dB/oct', '2': '18 dB/oct', '3': '24 dB/oct'}
         return slope[response]
 
@@ -114,7 +131,7 @@ class sr830:
         """
         if value in (6, 12, 18, 24):
             slope = {6: '0', 12: '1', 18: '2', 24: '3'}
-            self._visa_resource.query_ascii_values('OSFL {}'.format(slope[value]))
+            self._instrument.query_ascii_values('OSFL {}'.format(slope[value]))
         else:
             raise RuntimeError('Low pass filter slope only accepts [6|12|18|24].')
 
@@ -125,7 +142,7 @@ class sr830:
         The reserve mode of the SR830.
         """
         reserve = {'0': 'high', '1': 'normal', '2': 'low noise'}
-        response = self._visa_resource.query_ascii_values('RMOD?')[0]
+        response = self._instrument.query_ascii_values('RMOD?')[0]
         return reserve[response]
 
 
@@ -142,7 +159,7 @@ class sr830:
                         'normal': 1, 1: 1,
                         'lo': 2, 'low': 2, 'low noise': 2, 2: 2}
         if mode in modes_dict.keys():
-            self._visa_resource.query_ascii_values('RMOD {}'.format(mode))
+            self._instrument.query_ascii_values('RMOD {}'.format(mode))
         else:
             raise RuntimeError('Incorrect key for reserve.')
 
@@ -152,13 +169,13 @@ class sr830:
         """
         The frequency of the output signal.
         """
-        return self._visa_resource.query_ascii_values('FREQ?')[0]
+        return self._instrument.query_ascii_values('FREQ?')[0]
 
 
     @frequency.setter
     def frequency(self, value):
         if 0.001 <= value <= 102000:
-            self._visa_resource.write("FREQ {}".format(value))
+            self._instrument.write("FREQ {}".format(value))
         else:
             raise RuntimeError('Valid frequencies are between 0.001 Hz and 102 kHz.')
     
@@ -172,7 +189,7 @@ class sr830:
             2: I (1 MOhm)
             3: I (100 MOhm)
         """
-        return self._visa_resource.query_ascii_values('ISRC?')
+        return self._instrument.query_ascii_values('ISRC?')
 
 
     @input.setter
@@ -189,7 +206,7 @@ class sr830:
 
         if query in input.keys():
             command = input[query]
-            self._visa_resource.write("ISRC {}".format(command))
+            self._instrument.write("ISRC {}".format(command))
         else:
             raise RuntimeError('Unexpected input for SR830 input command.')
 
@@ -199,13 +216,13 @@ class sr830:
         """
         The phase of the output relative to the input.
         """
-        return self._visa_resource.query_ascii_values('PHAS?')[0]
+        return self._instrument.query_ascii_values('PHAS?')[0]
 
 
     @phase.setter
     def phase(self, value):
         if (isInstance(value, float) or isInstance(value, int) and -360.0 <= value <= 729.99):
-            self._visa_resource.write("PHAS {}".format(value))
+            self._instrument.write("PHAS {}".format(value))
         else:
             raise RuntimeError('Given phase is out of range for the SR830. Should be between -360.0 and 729.99.')
     
@@ -215,13 +232,13 @@ class sr830:
         """
         The amplitude of the voltage output.
         """
-        return self._visa_resource.query_ascii_values('SLVL?')[0]
+        return self._instrument.query_ascii_values('SLVL?')[0]
 
     
     @amplitude.setter
     def amplitude(self, value):
         if 0.004 <= value <= 5.0:
-            self._visa_resource.write("SLVL {}".format(value))
+            self._instrument.write("SLVL {}".format(value))
         else:
             raise RuntimeError('Given amplitude is out of range. Expected 0.004 to 5.0 V.')
 
@@ -231,31 +248,33 @@ class sr830:
         """
         The time constant of the SR830.
         """
-        const_index = self._visa_resource.query_ascii_values('OFLT?')[0]
+        const_index = self._instrument.query_ascii_values('OFLT?')[0]
         return TIME_CONSTANT[const_index]
 
 
     @time_constant.setter
     def time_constant(self, value):
-        if value == 'increment':
+        if value.lower() == 'increment':
             if self.time_constant + 1 <= 19:
                 self.time_constant += 1
-        elif value == 'decrement':
+        elif value.lower() == 'decrement':
             if self.time_constant - 1 >= 0:
                 self.time_constant -= 1
+        elif 0 <= value <= 19:
+            self._instrument.write("SENS {}".format(value))
         else:
-            self._visa_resource.write("SENS {}".format(value))
+            raise RuntimeError('Time constant index must be between 0 and 19 (inclusive).')
 		
 		
     @property
     def sensitivity(self):
-        sens_index = self._visa_resource.query_ascii_values('SENS?')[0]
+        sens_index = self._instrument.query_ascii_values('SENS?')[0]
         return sense_dict[sens_index]
 
 
     @sensitivity.setter
     def sensitivity(self, value):
-        self._visa_resource.write("SENS {}".format(sens_index))
+        self._instrument.write("SENS {}".format(sens_index))
 
                 
     def setDisplay(self, channel, display, ratio=0):
@@ -279,7 +298,7 @@ class sr830:
             display (int): what to display
             ratio (int, optional): display the output as a ratio
         """
-        self._visa_resource.write("DDEF {}, {}, {}".format(channel, display, ratio))
+        self._instrument.write("DDEF {}, {}, {}".format(channel, display, ratio))
         
     def getDisplay(self, channel):
         """Get the display configuration of the amplifier.
@@ -298,7 +317,7 @@ class sr830:
         Returns:
             int: the parameter being displayed by the amplifier
         """
-        return self._visa_resource.query_ascii_values("DDEF? {}".format(channel))
+        return self._instrument.query_ascii_values("DDEF? {}".format(channel))
     
     def single_output(self, value):
         """Get the current value of a single parameter.
@@ -311,7 +330,7 @@ class sr830:
         Returns:
             float: the value of the specified parameter
         """
-        return self._visa_resource.query_ascii_values("OUTP? {}".format(value))
+        return self._instrument.query_ascii_values("OUTP? {}".format(value))
             
     def multiple_output(self, *values):
         """Get the current value of between two and six instrument parameters.
@@ -336,7 +355,7 @@ class sr830:
         """
 
         commandString = "SNAP?" +  " {}," * len(values)
-        return self._visa_resource.query_ascii_values(commandString.format(*values))
+        return self._instrument.query_ascii_values(commandString.format(*values))
 
 
     def auto_gain(self):
@@ -344,21 +363,21 @@ class sr830:
         Mimics pressing the Auto Gain button. Does nothing if the time
         constant is more than 1 second.
         """
-        self._visa_resource.query_ascii_values("AGAN")
+        self._instrument.query_ascii_values("AGAN")
 
 
     def auto_reserve(self):
         """
         Mimics pressing the Auto Reserve button.
         """
-        self._visa_resource.query_ascii_values("ARSV")
+        self._instrument.query_ascii_values("ARSV")
 
 
     def auto_phase(self):
         """
         Mimics pressing the Auto Phase button.
         """
-        self._visa_resource.query_ascii_values("APHS")
+        self._instrument.query_ascii_values("APHS")
 
 
     def auto_offset(self, parameter):
@@ -367,4 +386,4 @@ class sr830:
 
         :param parameter: A string from ['x'|'y'|'r'], case insensitive.
         """
-        self._visa_resource.query_ascii_values("AOFF {}".format(parameter.upper()))
+        self._instrument.query_ascii_values("AOFF {}".format(parameter.upper()))

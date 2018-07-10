@@ -2,7 +2,7 @@ from os.path import join as pjoin
 
 # Format expected by setup.py and doc/source/conf.py: string of form "X.Y.Z"
 _version_major = 0
-_version_minor = 1
+_version_minor = 2
 _version_micro = ''  # use '' for first of series, number for 1 and above
 _version_extra = 'dev'
 # _version_extra = ''  # Uncomment this for full releases
@@ -54,8 +54,8 @@ Copyright (c) 2016--, Henry Hinnefeld.
 """
 
 NAME = "labdrivers"
-MAINTAINER = "Henry Hinnefeld"
-MAINTAINER_EMAIL = "henry.hinnefeld@gmail.com"
+MAINTAINER = "Jeff Damasco"
+MAINTAINER_EMAIL = "jeffdamasco@gmail.com"
 DESCRIPTION = description
 LONG_DESCRIPTION = long_description
 URL = "http://github.com/masonlab/labdrivers"
@@ -70,9 +70,10 @@ MICRO = _version_micro
 VERSION = __version__
 PACKAGES = ['labdrivers',
             'labdrivers.keithley',
+			'labdrivers.lakeshore',
             'labdrivers.srs',
             'labdrivers.quantumdesign',
             'labdrivers.oxford',
             'labdrivers.ni']
 PACKAGE_DATA = {'labdrivers': [pjoin('data', '*')]}
-REQUIRES = ["numpy", "pyvisa", "pandas", "pythonnet"]
+REQUIRES = ["numpy", "pyvisa", "pythonnet", "PyDAQmx"]
