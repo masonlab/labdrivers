@@ -14,10 +14,6 @@ errors whenever the Sourcemeter was used for gating.
 Here, this version adds in the trace/buffer commands individually but will
 also give a limited implementation of sweeps so that the user does not
 have to remember all of the code in the API.
-
-Pandas was removed because there was some noticeable slowdown during
-experiments. This should also help in a marginal way when installing
-with pip or Anaconda.
 """
 
 import visa
@@ -403,6 +399,10 @@ class keithley2400():
     @sweep_direction.setter
     def sweep_direction(self, direction):
         pass
+
+    # Pre-made commands
+
+    # TODO: make stuff
 
     # Common commands
 
