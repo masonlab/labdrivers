@@ -8,12 +8,12 @@ Version: 2.0
 
 Some of this class structure was inspired by large chunks of code from
 Henry's old class. I chose to move in a slightly different direction
-because the old class was a bit presumptuous (which I do not mean in a
-judgmental or malevolent way!!!) about what the Keithley was used
-for. I think the old class was used for probe station testing, but
-most of the measurements that have publishable data will only use the
-Keithley for gates and actual voltage/current/resistance measurements
-are taken with lock-ins.
+because the old class was very restrictive in its use and also gave
+errors whenever the Sourcemeter was used for gating.
+
+Here, this version adds in the trace/buffer commands individually but will
+also give a limited implementation of sweeps so that the user does not
+have to remember all of the code in the API.
 
 Pandas was removed because there was some noticeable slowdown during
 experiments. This should also help in a marginal way when installing
@@ -21,6 +21,7 @@ with pip or Anaconda.
 """
 
 import visa
+
 
 class keithley2400():
 
@@ -39,42 +40,34 @@ class keithley2400():
 
         self._instrument = None
 
-
     def __enter__(self):
         '''Opens handle for Keithley 2400 Sourcemeter.'''
         self._instrument = self._resource_manager.open_resource("GPIB::{}".format(self.gpib_addr))
-
 
     def __exit__(self):
         '''Closes handle for Keithley 2400 Sourcemeter.'''
         self._instrument.close()
 
-
     def enable_remote(self):
         '''Opens a handle for the Keithley 2400 Sourcemeter.'''
         self._instrument = self._resource_manager.open_resource("GPIB::{}".format(self.gpib_addr))
 
-
     def disable_remote(self):
         '''Closes the handle for the Keithley 2400 Sourcemeter.'''
         self._instrument.close()
-
 
     @property
     def gpib_addr(self):
         '''Returns the GPIB address of the Keithley 2400 Sourcemeter.'''
         return self._gpib_addr
 
-
     # source functions
-
 
     @property
     def source_type(self):
         response = self._instrument.query("source:function:mode?").strip()
         SOURCE_TYPE = {'VOLT': 'voltage', 'CURR': 'current'}
         return SOURCE_TYPE['response']
-
 
     @source_type.setter
     def source_type(self, value):
@@ -87,27 +80,36 @@ class keithley2400():
         else:
             raise RuntimeError('Not a valid source type.')
 
+    @property
+    def source_mode(self):
+        """Mode of the source: [fixed | sweep | list]"""
+        # TODO: test
+        return self._visa_resource.query('source:' + self.source_type.lower() + ':mode?')
+
+    @source_mode.setter
+    def source_mode(self, mode):
+        if mode.lower() in ('fixed', 'sweep', 'list'):
+            self._visa_resource.write('source:' + self.source_type.lower() + ':mode {}'.format(mode))
+        else:
+            raise RuntimeError('Mode is not one of [fixed | sweep | list]')
 
     @property
     def source_value(self):
-        return self.source_value
-
+        """Numeric value of the source chosen from keithley.source_type."""
+        # TODO: test
+        return self._visa_resource.query('source:' + self.source_type.lower() + ':level?')
 
     @source_value.setter
     def source_value(self, value):
-        self.source_value = value
-        self._visa_resource.write("source:function:mode " + self.source_type.upper())
-        self._visa_resource.write("source:" + self.source_type.upper() + ":mode FIXED")
-        self._visa_resource.write("source:" + self.source_type.upper() + ":RANGE " + str(value))
-        self._visa_resource.write("source:" + self.source_type.upper() + ":LEVEL " + str(value))
-
+        self._visa_resource.write("source:function:mode " + self.source_type.lower())
+        self._visa_resource.write("source:" + self.source_type.lower() + ":range " + str(value))
+        self._visa_resource.write("source:" + self.source_type.lower() + ":level " + str(value))
 
     @property
     def measure_type(self):
         MEASURE_TYPE = {'VOLT:DC': 'voltage', 'CURR:DC': 'current', 'RES': 'resistance'}
         measure_type_response = self._instrument.query("sense:function?").strip().replace('\"','').split(',')[-1]
         return MEASURE_TYPE[response]
-
 
     @measure_type.setter
     def measure_type(self, value):
@@ -117,16 +119,13 @@ class keithley2400():
         else:
             raise RuntimeError('Expected a value from [\'voltage\'|\'current\'|\'resistance\'')
 
-
     # Resistance sensing
-
 
     @property
     def resistance_ohms_mode(self):
         MODES = {'MAN': 'manual', 'AUTO': 'auto'}
         response = self._instrument.query('sense:resistance:mode?').strip()
         return MODES[response]
-
 
     @resistance_ohms_mode.setter
     def resistance_ohms_mode(self, value):
@@ -136,12 +135,10 @@ class keithley2400():
         else:
             raise RuntimeError('Expected a value from [\'manual\'|\'auto\']')
 
-
     @property
     def expected_ohms_reading(self):
         response = self._instrument.query('sense:resistance:range?').strip()
         return float(response)
-
 
     @expected_ohms_reading.setter
     def expected_ohms_reading(self, value):
@@ -150,12 +147,10 @@ class keithley2400():
         else:
             raise RuntimeError('Expected an int or float.')
 
-
     @property
     def four_wire_sensing(self):
         response = self._instrument.query('system:rsense?').strip()
         return bool(int(response))
-
 
     @four_wire_sensing.setter
     def four_wire_sensing(self, value):
@@ -164,15 +159,12 @@ class keithley2400():
         else:
             raise RuntimeError('Expected boolean value.')
 
-
     # Voltage sensing and compliance
-    
 
     @property
     def expected_voltage_reading(self):
         response = self._instrument.query('sense:voltage:RANGE?').strip()
         return float(response)
-
 
     @expected_voltage_reading.setter
     def expected_voltage_reading(self, value):
@@ -181,12 +173,10 @@ class keithley2400():
         else:
             raise RuntimeError('Expected an int or float.')
 
-
     @property
     def voltage_compliance(self):
         response = self._instrument.query("SENS:VOLT:PROT:LEV?").strip()
         return float(response)
-
 
     @voltage_compliance.setter
     def voltage_compliance(self, value):
@@ -195,20 +185,16 @@ class keithley2400():
         else:
             raise RuntimeError('Voltage compliance cannot be set. Value must be between 200 \u03BC' + 'V and 210 V.')
 
-
     def within_voltage_compliance(self):
         response = self._instrument.query('SENS:VOLT:PROT:TRIP?').strip()
         return (not bool(int(response)))
 
-
     # Current sensing and compilance
-
 
     @property
     def expected_current_reading(self):
         response = self._instrument.query('sense:current:range?').strip()
         return float(response)
-
 
     @expected_current_reading.setter
     def expected_current_reading(self):
@@ -217,12 +203,10 @@ class keithley2400():
         else:
             RuntimeError('Expected an int or float.')
 
-
     @property
     def current_compliance(self):
         response = self._instrument.query("SENS:CURR:PROT:LEV?").strip()
         return float(response)
-
 
     @current_compliance.setter
     def current_compliance(self, value):
@@ -231,21 +215,17 @@ class keithley2400():
         else:
             raise RuntimeError('Current compliance cannot be set. Value must be between 1 nA and 1.05 A.')
 
-
     def within_current_compliance(self):
         response = self._instrument.query('SENS:CURR:PROT:TRIP?').strip()
         return (not bool(int(response)))
 
-
     # Output configuration
-
 
     @property
     def output(self):
         OUTPUT = {'0':'off', '1':'on'}
         response = self._instrument.query("OUTP?").strip()
         return OUTPUT[response]
-
 
     @output.setter
     def output(self, value):
@@ -256,13 +236,11 @@ class keithley2400():
             self.output = False
             self._visa_resource.write("OUTP OFF")
 
-
     @property
     def output_off_mode(self):
         MODES = {'HIMP': 'high impedance', 'NORM': 'normal', 'ZERO': 'zero', 'GUAR': 'guard'}
         response = self._instrument.query('OUTP:SMOD?').strip()
         return MODES[response]
-
 
     @output_off_mode.setter
     def output_off_mode(self, value):
@@ -270,22 +248,18 @@ class keithley2400():
                  'zero': 'ZERO', '0': 'ZERO', 'guard': 'GUARD'}
         self._instrument.write('OUTP:SMOD {}'.format(MODES[value.lower()])
 
-
     # Data acquisition
 
     def read(self):
         response = self._instrument.query('read?').strip()
         return float(response)
 
-
     # Trigger functions
-
 
     @property
     def trace_delay(self):
         """The amount of time the SourceMeter waits after the trigger to perform Device Action."""
         return float(self._instrument.query('trigger:delay?').strip())
-
 
     @trace_delay.setter
     def trace_delay(self, delay):
@@ -297,7 +271,6 @@ class keithley2400():
         else:
             raise RuntimeError('Expected delay to be an int or float.')
 
-
     @property
     def trigger(self):
         TRIGGERS =  {   'IMM': 'immediate',         'TLIN': 'trigger link',         'TIM': 'timer',
@@ -305,7 +278,6 @@ class keithley2400():
                         'PST': 'high SOT pulse',    'BST': 'high or low SOT pulse'
                     }
         return TRIGGERS[self._instrument.query('trigger:source?')]
-
 
     @trigger.setter
     def trigger(self, trigger):
@@ -324,21 +296,17 @@ class keithley2400():
         else:
             raise RuntimeError('Unexpected trigger input. See documentation for details.')
 
-
-    # Trace functions
-
+    # Data storage / Buffer functions
     
     @property
     def num_readings_in_buffer(self):
         """The number of readings stored in buffer."""
         return int(self._instrument.query('trace:points:actual?').strip())
 
-
     @property
     def trace_points(self):
         """Buffer size."""
         return int(self._instrument.query('trace:points?').strip())
-
 
     @trace_points.setter
     def trace_points(self, num_points):
@@ -347,23 +315,104 @@ class keithley2400():
         else:
             raise RuntimeError('Expected type of num_points: int.')
 
-
-    def retrieve_trace(self):
+    def read_trace(self):
+        """Read contents of buffer."""
         trace = self._instrument.query('trace:data?').strip().split(',')
         trace = [float(x) for x in trace]
 
-
     def clear_trace(self):
+        """Clear buffer."""
         self._instrument.query('trace:clear')
 
-    
-    # Common commands
+    def buffer_memory_status(self):
+        """Check buffer memory status."""
+        response = self._instrument.query('trace:free?')
 
+    def fill_buffer(self):
+        """Fill buffer and stop."""
+        self._instrument.write('trace:feed:control next')
+
+    def disable_buffer(self):
+        """Disable buffer."""
+        self._instrument.write('trace:feed:control never')
+
+    # Sweeeping
+
+    # TODO: implement these!!!
+
+    @property
+    def sweep_start(self):
+        pass
+
+    @sweep_start.setter
+    def sweep_start(self, start):
+        pass
+
+    @property
+    def sweep_end(self):
+        pass
+
+    @sweep_end.setter
+    def sweep_end(self, end):
+        pass
+
+    @property
+    def sweep_center(self):
+        pass
+
+    @sweep_center.setter
+    def sweep_center(self, center):
+        pass
+
+    @property
+    def sweep_span(self):
+        pass
+
+    @sweep_span.setter
+    def sweep_span(self, span):
+        pass
+
+    @property
+    def sweep_ranging(self):
+        pass
+
+    @sweep_ranging.setter
+    def sweep_ranging(self, _range):
+        pass
+
+    @property
+    def sweep_scale(self):
+        pass
+
+    @sweep_scale.setter
+    def sweep_scale(self, scale):
+        pass
+
+    @property
+    def sweep_points(self):
+        pass
+
+    @sweep_points.setter
+    def sweep_points(self, num_points):
+        pass
+
+    @property
+    def sweep_direction(self):
+        pass
+
+    @sweep_direction.setter
+    def sweep_direction(self, direction):
+        pass
+
+    # Common commands
 
     def clear_status(self):
         """Clears all event registers and Error Queue."""
         self._instrument.write('*cls')
 
+    def reset_to_defaults(self):
+        """Resets to defaults of Sourcemeter."""
+        self._instrument.write('*rst')
 
     def identify(self):
         """Returns manufacturer, model number, serial number, and firmware revision levels."""
@@ -373,7 +422,6 @@ class keithley2400():
                     'serial number': response[2],
                     'firmware revision level': response[3]
                 }
-
 
     def send_bus_trigger(self):
         """Sends bus trigger to SourceMeter."""
