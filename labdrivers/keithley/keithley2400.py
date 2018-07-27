@@ -63,7 +63,7 @@ class keithley2400():
     def source_type(self):
         response = self._instrument.query("source:function:mode?").strip()
         SOURCE_TYPE = {'VOLT': 'voltage', 'CURR': 'current'}
-        return SOURCE_TYPE['response']
+        return SOURCE_TYPE[response]
 
     @source_type.setter
     def source_type(self, value):
@@ -80,12 +80,12 @@ class keithley2400():
     def source_mode(self):
         """Mode of the source: [fixed | sweep | list]"""
         # TODO: test
-        return self._visa_resource.query('source:' + self.source_type.lower() + ':mode?')
+        return self._instrument.query('source:' + self.source_type.lower() + ':mode?')
 
     @source_mode.setter
     def source_mode(self, mode):
         if mode.lower() in ('fixed', 'sweep', 'list'):
-            self._visa_resource.write('source:' + self.source_type.lower() + ':mode {}'.format(mode))
+            self._instrument.write('source:' + self.source_type.lower() + ':mode {}'.format(mode))
         else:
             raise RuntimeError('Mode is not one of [fixed | sweep | list]')
 
@@ -93,13 +93,13 @@ class keithley2400():
     def source_value(self):
         """Numeric value of the source chosen from keithley.source_type."""
         # TODO: test
-        return self._visa_resource.query('source:' + self.source_type.lower() + ':level?')
+        return self._instrument.query('source:' + self.source_type.lower() + ':level?')
 
     @source_value.setter
     def source_value(self, value):
-        self._visa_resource.write("source:function:mode " + self.source_type.lower())
-        self._visa_resource.write("source:" + self.source_type.lower() + ":range " + str(value))
-        self._visa_resource.write("source:" + self.source_type.lower() + ":level " + str(value))
+        self._instrument.write("source:function:mode " + self.source_type.lower())
+        self._instrument.write("source:" + self.source_type.lower() + ":range " + str(value))
+        self._instrument.write("source:" + self.source_type.lower() + ":level " + str(value))
 
     @property
     def measure_type(self):
@@ -138,7 +138,7 @@ class keithley2400():
 
     @expected_ohms_reading.setter
     def expected_ohms_reading(self, value):
-        if isInstance(value, int) or isInstance(value, float):
+        if isinstance(value, int) or isinstance(value, float):
             self._instrument.write('sense:resistance:range {}'.format(value))
         else:
             raise RuntimeError('Expected an int or float.')
@@ -150,7 +150,7 @@ class keithley2400():
 
     @four_wire_sensing.setter
     def four_wire_sensing(self, value):
-        if isInstance(value, bool):
+        if isinstance(value, bool):
             self._instrument.write('system:rsense {}'.format(int(value)))
         else:
             raise RuntimeError('Expected boolean value.')
@@ -164,7 +164,7 @@ class keithley2400():
 
     @expected_voltage_reading.setter
     def expected_voltage_reading(self, value):
-        if isInstance(value, int) or isInstance(value, float):
+        if isinstance(value, int) or isinstance(value, float):
             self._instrument.write('sense:voltage:range {}'.format(value))
         else:
             raise RuntimeError('Expected an int or float.')
@@ -194,7 +194,7 @@ class keithley2400():
 
     @expected_current_reading.setter
     def expected_current_reading(self):
-        if isInstance(value, int) or isInstance(value, float):
+        if isinstance(value, int) or isinstance(value, float):
             self._instrument.write('sense:current:range {}'.format(value))
         else:
             RuntimeError('Expected an int or float.')
@@ -225,12 +225,10 @@ class keithley2400():
 
     @output.setter
     def output(self, value):
-        if output:
-            self.output = True
-            self._visa_resource.write("OUTP ON")
+        if value:
+            self._instrument.write("OUTP ON")
         else:
-            self.output = False
-            self._visa_resource.write("OUTP OFF")
+            self._instrument.write("OUTP OFF")
 
     @property
     def output_off_mode(self):
@@ -242,7 +240,7 @@ class keithley2400():
     def output_off_mode(self, value):
         MODES = {'high impedance': 'HIMP', 'himp': 'HIMP', 'normal': 'NORM', 'norm': 'NORM',
                  'zero': 'ZERO', '0': 'ZERO', 'guard': 'GUARD'}
-        self._instrument.write('OUTP:SMOD {}'.format(MODES[value.lower()])
+        self._instrument.write('OUTP:SMOD {}'.format(MODES[value.lower()]))
 
     # Data acquisition
 
@@ -259,7 +257,7 @@ class keithley2400():
 
     @trace_delay.setter
     def trace_delay(self, delay):
-        if isInstance(delay, float) or isInstance(delay, int):
+        if isinstance(delay, float) or isinstance(delay, int):
             if 0.0 <= delay <= 999.9999:
                 self._instrument.write('trigger:delay {}'.format(delay))
             else:
@@ -306,7 +304,7 @@ class keithley2400():
 
     @trace_points.setter
     def trace_points(self, num_points):
-        if isInstance(num_points, int):
+        if isinstance(num_points, int):
             self._instrument.write('trace:points {}'.format(num_points))
         else:
             raise RuntimeError('Expected type of num_points: int.')

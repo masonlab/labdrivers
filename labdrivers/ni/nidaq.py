@@ -16,23 +16,23 @@ class nidaq():
         """
     
     def __init__(self, device='Dev1'):
-        self.device = device
-        self.channel = None
+        self._device = device
+        self._channel = None
     
 
     @property
     def device(self):
-        return self.device
+        return self._device
 
 
     @property
     def channel(self):
-        return self.channel
+        return self._channel
 
     
     @channel.setter
     def channel(self, value):
-        self.channel = value.lower()
+        self._channel = value.lower()
     
 
     def reset(self):

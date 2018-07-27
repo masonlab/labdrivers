@@ -65,7 +65,7 @@ class sr830:
         """
         try:
             # the pyvisa manager we'll use to connect to the GPIB resources
-            resource_manager = visa.ResourceManager()
+            self.resource_manager = visa.ResourceManager()
         except OSError:
             logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
         
@@ -74,7 +74,7 @@ class sr830:
 
 
     def __enter__(self):
-        self._instrument = resource_manager.open_resource("GPIB::%d" % self._gpib_addr)
+        self._instrument = self.resource_manager.open_resource("GPIB::%d" % self._gpib_addr)
 
 
     def __exit__(self):
@@ -82,7 +82,7 @@ class sr830:
 
 
     def enable_remote(self):
-        self._instrument = resource_manager.open_resource("GPIB::%d" % self._gpib_addr)
+        self._instrument = self.resource_manager.open_resource("GPIB::%d" % self._gpib_addr)
 
 
     def disable_remote(self):
@@ -99,7 +99,7 @@ class sr830:
 
     @sync_filter.setter
     def sync_filter(self, value):
-        if isInstance(value, bool):
+        if isinstance(value, bool):
             self._instrument.query_ascii_values('SYNC {}'.format(int(value)))
         else:
             raise RuntimeError('Sync filter input expects [True|False].')
@@ -148,14 +148,14 @@ class sr830:
 
     @reserve.setter
     def reserve(self, value):
-        if isInstance(value, str):
+        if isinstance(value, str):
             mode = value.lower()
-        elif isInstance(value, int):
+        elif isinstance(value, int):
             mode = value
         else:
             raise RuntimeError('Reserve expects a string or integer argument.')
         
-        modes_dict = {  'hi': 0, 'high': 0, 'high reserve': 0, 0: 0
+        modes_dict = {  'hi': 0, 'high': 0, 'high reserve': 0, 0: 0,
                         'normal': 1, 1: 1,
                         'lo': 2, 'low': 2, 'low noise': 2, 2: 2}
         if mode in modes_dict.keys():
@@ -199,7 +199,7 @@ class sr830:
                     '2': 2, 2:2, 'I1': 2, 'I1M': 2, 'I1MOHM': 2,
                     '3': 3, 3:3, 'I100': 3, 'I100M': 3, 'I100MOHM': 3
                 }
-        if isInstance(input_value, str):
+        if isinstance(input_value, str):
             query = input_value.upper().replace('(','').replace(')','').replace(' ','')
         else:
             query = input_value
@@ -221,7 +221,7 @@ class sr830:
 
     @phase.setter
     def phase(self, value):
-        if (isInstance(value, float) or isInstance(value, int) and -360.0 <= value <= 729.99):
+        if (isinstance(value, float) or isinstance(value, int) and -360.0 <= value <= 729.99):
             self._instrument.write("PHAS {}".format(value))
         else:
             raise RuntimeError('Given phase is out of range for the SR830. Should be between -360.0 and 729.99.')
