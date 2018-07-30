@@ -31,31 +31,6 @@ class sr830:
 
     :param GPIBaddr: the GPIB address of the instrument
     """
-    TIME_CONSTANT = { 0: '10 us',  10: '1 s',
-                      1: '30 us',  11: '3 s',
-                      2: '100 us', 12: '10 s',
-                      3: '300 us', 13: '30 s',
-                      4: '1 ms',   14: '100 s',
-                      5: '3 ms',   15: '300 s',
-                      6: '10 ms',  16: '1 ks',
-                      7: '30 ms',  17: '3 ks',
-                      8: '100 ms', 18: '10 ks',
-                      9: '300 ms', 19: '30 ks'}
-
-    SENSITIVITY = {   0: "2 nV/fA",		13: "50 uV/pA",
-					  1: "5 nV/fA",		14: "100 uV/pA",
-					  2: "10 nV/fA",	15: "200 uV/pA",
-					  3: "20 nV/fA",	16: "500 uV/pA",
-					  4: "50 nV/fA",	17: "1 mV/nA",
-					  5: "100 nV/fA",	18: "2 mV/nA",
-					  6: "200 nV/fA",	19: "5 mV/nA",
-					  7: "500 nV/fA",	20: "10 mV/nA",
-					  8: "1 uV/pA",		21: "20 mV/nA",
-					  9: "2 uV/pA",		22: "50 mV/nA",
-					 10: "5 uV/pA",		23: "100 mV/nA",
-					 11: "10 uV/pA",	24: "200 mV/nA",
-					 12: "20 uV/pA",	25: "500 mV/nA",
-										26: "1 V/uA"}
 
     def __init__(self, GPIBaddr):
         """Create an instance of the sr830 class.
@@ -179,6 +154,7 @@ class sr830:
         else:
             raise RuntimeError('Valid frequencies are between 0.001 Hz and 102 kHz.')
     
+    # INPUT and FILTER
 
     @property
     def input(self):
@@ -210,6 +186,20 @@ class sr830:
         else:
             raise RuntimeError('Unexpected input for SR830 input command.')
 
+    @property
+    def input_shield_grounding(self):
+        """Tells whether the shield is floating or grounded."""
+        response = self._instrument.query_ascii_values("IGND?")
+        return {'0': 'Float', '1': 'Ground'}[response]
+
+    @input_shield_grounding.setter
+    def input_shield_grounding(self, ground_type):
+        ground_types = {'float': '0', 'floating': '0', '0': '0',
+                        'ground': '1', 'grounded', '1', '1': '1'}
+        if ground_type.lower() in ground_types.keys():
+            self._instrument.write("IGND {}".format(ground_type.lower()))
+        else:
+            raise RuntimeError('Improper input grounding shield type.')
 
     @property
     def phase(self):
@@ -248,6 +238,17 @@ class sr830:
         """
         The time constant of the SR830.
         """
+        TIME_CONSTANT = { 0: '10 us',  10: '1 s',
+                      1: '30 us',  11: '3 s',
+                      2: '100 us', 12: '10 s',
+                      3: '300 us', 13: '30 s',
+                      4: '1 ms',   14: '100 s',
+                      5: '3 ms',   15: '300 s',
+                      6: '10 ms',  16: '1 ks',
+                      7: '30 ms',  17: '3 ks',
+                      8: '100 ms', 18: '10 ks',
+                      9: '300 ms', 19: '30 ks'}
+
         const_index = self._instrument.query_ascii_values('OFLT?')[0]
         return TIME_CONSTANT[const_index]
 
@@ -268,8 +269,24 @@ class sr830:
 		
     @property
     def sensitivity(self):
+        """Voltage/current sensitivity for inputs."""
+        SENSITIVITY = {   0: "2 nV/fA",		13: "50 uV/pA",
+					  1: "5 nV/fA",		14: "100 uV/pA",
+					  2: "10 nV/fA",	15: "200 uV/pA",
+					  3: "20 nV/fA",	16: "500 uV/pA",
+					  4: "50 nV/fA",	17: "1 mV/nA",
+					  5: "100 nV/fA",	18: "2 mV/nA",
+					  6: "200 nV/fA",	19: "5 mV/nA",
+					  7: "500 nV/fA",	20: "10 mV/nA",
+					  8: "1 uV/pA",		21: "20 mV/nA",
+					  9: "2 uV/pA",		22: "50 mV/nA",
+					 10: "5 uV/pA",		23: "100 mV/nA",
+					 11: "10 uV/pA",	24: "200 mV/nA",
+					 12: "20 uV/pA",	25: "500 mV/nA",
+										26: "1 V/uA"}
+
         sens_index = self._instrument.query_ascii_values('SENS?')[0]
-        return sense_dict[sens_index]
+        return SENSITIVITY[sens_index]
 
 
     @sensitivity.setter
@@ -387,3 +404,88 @@ class sr830:
         :param parameter: A string from ['x'|'y'|'r'], case insensitive.
         """
         self._instrument.query_ascii_values("AOFF {}".format(parameter.upper()))
+
+    # Data storage commands
+
+    @property
+    def data_sample_rate(self):
+        """Data sample rate, which can be 62.5 mHz, 512 Hz, or Trigger.
+        
+        Expected strings: 62.5, 62.5 mhz, 62.5mhz, mhz, 0, 512, 512hz, 512 hz,
+        hz, 13, trig, trigger, 14."""
+        rate_dict = {'0': '62.5 mHz', '13': '512 Hz', '14': 'Trigger'}
+
+        response = self._instrument.query_ascii_values("SRAT?")[0]
+        return rate_dict[response]
+
+    @data_sample_rate.setter
+    def data_sample_rate(self, rate):
+        rate_dict = {   '62.5': '0', '0': '0', '62.5mhz': '0', 'mhz': '0',
+                        '512': '13', '13': '13', '512hz': '13', 'hz': '13',
+                        'trig': '14', '14': '14', 'trigger': '14'
+                    }
+        rate_value = str(rate).lower().replace(' ','')
+        if rate_value in rate_dict.keys():
+            self._instrument.write("SRAT {}".format(rate_value))
+        else:
+            raise RuntimeError('Sample rate input not recognized.')
+
+    @property
+    def data_scan_mode(self):
+        """Data scan mode, which is either a 1-shot or a loop.
+        
+        Expected strings: 1-shot, 1 shot, 1shot, loop."""
+        scan_modes = { '0': '1-shot', '1': 'loop' }
+        response = self._instrument.query_ascii_values("SEND?")[0]
+        return scan_modes[response]
+
+    @data_scan_mode.setter
+    def data_scan_mode(self, scan_mode):
+        scan_modes = { '1shot': '0', 'loop': '1' }
+        mode = scan_mode.replace('-','').replace(' ','')
+        self._instrument.write("SEND {}".format(mode))
+
+    @property
+    def trigger_starts_scan(self):
+        """Determines if a Trigger starts scan mode."""
+        response = self._instrument.query_ascii_values("TSTR?")[0]
+        return {'0': False, '1': True }[response]
+
+    @trigger_starts_scan.setter
+    def trigger_starts_scan(self, starts):
+        starts_value = int(bool(starts))
+        self._instrument.write("TSTR {}".format(starts_value))
+
+    def trigger(self):
+        """Sends a software trigger."""
+        self._instrument.write("TRIG")
+
+    def start_scan(self):
+        """Starts or continues a scan."""
+        self._instrument.write("STRT")
+
+    def pause_scan(self):
+        """Pauses a scan."""
+        self._instrument.write("PAUS")
+
+    def reset_scan(self):
+        """Resets a scan and releases all stored data."""
+        self._instrument.write("REST")
+
+    # TODO: Implement these commands
+
+    @property
+    def input_coupling(self):
+        pass
+
+    @input_coupling.setter
+    def input_coupling(self, coupling_value):
+        pass
+
+    @property
+    def line_notch_filters(self):
+        pass
+
+    @line_notch_filters.setter
+    def line_notch_filters(self, filter):
+        pass

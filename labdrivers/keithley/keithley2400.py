@@ -290,7 +290,35 @@ class keithley2400():
         else:
             raise RuntimeError('Unexpected trigger input. See documentation for details.')
 
+    @property
+    def trigger_count(self):
+        """Number of triggers.
+
+        Expected value: Between 1 and 2500."""
+        return float(self._instrument.query('trigger:count?').strip())
+
+    @trigger_count.setter
+    def trigger_count(self, num_triggers):
+        if isinstance(num_triggers, int):
+            if 1 <= num_triggers <= 2500:
+                self._instrument.write('trigger:count {}'.format(num_triggers))
+            else:
+                raise RuntimeError('Trigger count expected to be between 1 and 2500.')
+        else:
+            raise RuntimeError('Trigger count expected to be type int.')
+
+    def initiate_cycle(self):
+        """Initiates source or measure cycle, taking the SourceMeter out of an idle state."""
+        self._instrument.write('initiate')
+
+    def abort_cycle(self):
+        """Aborts the source or measure cycle, bringing the SourceMeter back into an idle state."""
+        self._instrument.write('abort')
+
     # Data storage / Buffer functions
+
+    # Note: :trace:data? and :read? are two separate buffers of
+    # maximum size 2500 readings.
     
     @property
     def num_readings_in_buffer(self):
@@ -299,15 +327,29 @@ class keithley2400():
 
     @property
     def trace_points(self):
-        """Buffer size."""
+        """Buffer size.
+        
+        Expected value: 1 <= n <= 2500."""
         return int(self._instrument.query('trace:points?').strip())
 
     @trace_points.setter
     def trace_points(self, num_points):
         if isinstance(num_points, int):
-            self._instrument.write('trace:points {}'.format(num_points))
+            if 1 <= num_points <= 2500:
+                self._instrument.write('trace:points {}'.format(num_points))
+            else:
+                raise RuntimeError('Keithley 2400 SourceMeter may only have 1 to 2500 buffer points.')
         else:
             raise RuntimeError('Expected type of num_points: int.')
+
+    def trace_feed_source(self, value):
+        """Source of readings.
+
+        Expected values: sense, calculate1, calculate2."""
+        if value in ('sense', 'calculate1', 'calculate2'):
+            self._instrument.write('trace:feed {}'.format(value))
+        else:
+            raise RuntimeError('Unexpected trace source type. See documentation for details.')
 
     def read_trace(self):
         """Read contents of buffer."""
