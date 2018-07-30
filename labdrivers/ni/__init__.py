@@ -1,1 +1,1 @@
-from .bnc2110 import bnc2110
+from .nidaq import nidaq

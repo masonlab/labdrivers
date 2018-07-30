@@ -1,5 +1,4 @@
 import socket
-from math import radians, sin, cos
 
 import visa
 
