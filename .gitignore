@@ -11,3 +11,7 @@ venv/
 .vscode/
 .ipynb_checkpoints/
 example_nbs/.ipynb_checkpoints/
+
+build/
+dist/
+*.egg-info
