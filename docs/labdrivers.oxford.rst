@@ -3,7 +3,7 @@ labdrivers.oxford
 ##########################
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
 
 .. autoclass:: labdrivers.oxford.itc503.itc503
