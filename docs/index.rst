@@ -25,10 +25,12 @@ Currently labdrivers contains drivers for the following instruments::
 	|-- keithley
 	    `-- keithley2400.py
 	|-- ni
-	    `-- bnc2110.py
+	    `-- nidaq.py
 	|-- oxford
 	    |-- itc503.py
-	    `-- ips120.py
+	    |-- ips120.py
+		|-- mercuryips.py
+		`-- triton200.py
 	|-- quantumdesign
 	    `-- dynacool.py
 	|-- srs

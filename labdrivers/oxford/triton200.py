@@ -109,7 +109,7 @@ class triton200():
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect(self._address)
             s.settimeout(self._timeout)
-            s.sendall(command)
+            s.sendall(command.encode())
             response = s.recv(self._bytes_to_read).decode()
 
         return response

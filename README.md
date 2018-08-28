@@ -22,6 +22,20 @@ For the full driver API documentation, along with a description of the design de
 the driver implementations please see the full documentation at 
 [labdrivers.readthedocs.org](https://labdrivers.readthedocs.org).
 
+
+### Installation
+
+You may install using:
+
+`pip install labdrivers`
+
+The latest version will only install `pyvisa` and `PyDAQmx` if they are not already installed.
+However, `pythonnet` is necessary for the Quantum Design Dynacool class to work. Keep in mind that
+.NET 4.0+ **must** be installed. The dependency on Cython (CPython?) is being investigated and
+the `labdrivers` package will be updated as soon as more is known. This is not to say that the
+Quantum Design package cannot be used; manual installation of `pythonnet` and its dependencies 
+must be performed by the user.
+
 ### Contributing new drivers
 
 Pull requests with new drivers are welcome! 
