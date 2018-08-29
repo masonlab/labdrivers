@@ -6,6 +6,6 @@ labdrivers.ni
    :maxdepth: 2
 
 
-.. autoclass:: labdrivers.ni.nidaq.nidaq
+.. autoclass:: labdrivers.ni.nidaq.Nidaq
     :members:
     :undoc-members:

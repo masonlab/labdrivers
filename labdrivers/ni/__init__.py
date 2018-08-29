@@ -1,1 +1,1 @@
-from .nidaq import nidaq
+from .nidaq import Nidaq

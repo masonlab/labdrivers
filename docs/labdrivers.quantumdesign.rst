@@ -2,6 +2,6 @@
 labdrivers.quantumdesign 
 ##########################
 
-.. autoclass:: labdrivers.quantumdesign.dynacool.dynacool
+.. autoclass:: labdrivers.quantumdesign.dynacool.Dynacool
     :members:
     :undoc-members:

@@ -4,7 +4,7 @@ import numpy as np
 import PyDAQmx
 from PyDAQmx import Task
 
-class nidaq():
+class Nidaq():
     """Class to interface with a National Instruments BNC-2110 DAC
     
     Built on top of PyDAQmx. 
