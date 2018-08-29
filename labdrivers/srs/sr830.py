@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 
 
-class sr830:
+class Sr830():
     """A class to interface with the SR830 lockin amplifier
 
     :param GPIBaddr: the GPIB address of the instrument
@@ -165,7 +165,7 @@ class sr830:
             2: I (1 MOhm)
             3: I (100 MOhm)
         """
-        return self._instrument.query_ascii_values('ISRC?')
+        return self._instrument.query_ascii_values('ISRC?')[0]
 
 
     @input.setter
@@ -189,13 +189,13 @@ class sr830:
     @property
     def input_shield_grounding(self):
         """Tells whether the shield is floating or grounded."""
-        response = self._instrument.query_ascii_values("IGND?")
+        response = self._instrument.query_ascii_values("IGND?")[0]
         return {'0': 'Float', '1': 'Ground'}[response]
 
     @input_shield_grounding.setter
     def input_shield_grounding(self, ground_type):
         ground_types = {'float': '0', 'floating': '0', '0': '0',
-                        'ground': '1', 'grounded', '1', '1': '1'}
+                        'ground': '1', 'grounded': '1', '1': '1'}
         if ground_type.lower() in ground_types.keys():
             self._instrument.write("IGND {}".format(ground_type.lower()))
         else:
@@ -347,7 +347,7 @@ class sr830:
         Returns:
             float: the value of the specified parameter
         """
-        return self._instrument.query_ascii_values("OUTP? {}".format(value))
+        return self._instrument.query_ascii_values("OUTP? {}".format(value))[0]
             
     def multiple_output(self, *values):
         """Get the current value of between two and six instrument parameters.

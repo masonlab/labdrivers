@@ -1,1 +1,1 @@
-from .sr830 import sr830
+from .sr830 import Sr830

@@ -38,7 +38,7 @@ except OSError:
     logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
 
 
-class itc503():
+class Itc503():
     
     def __init__(self, GPIBaddr=24):
         """Connect to an ITC 503 S at the specified GPIB address

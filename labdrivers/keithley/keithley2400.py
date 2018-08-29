@@ -19,7 +19,7 @@ have to remember all of the code in the API.
 import visa
 
 
-class keithley2400():
+class Keithley2400():
 
     def __init__(self, gpib_addr=23):
         '''
@@ -61,6 +61,9 @@ class keithley2400():
 
     @property
     def source_type(self):
+        """Source type of the Keithley 2400 SourceMeter.
+
+        Expected values: voltage, current."""
         response = self._instrument.query("source:function:mode?").strip()
         SOURCE_TYPE = {'VOLT': 'voltage', 'CURR': 'current'}
         return SOURCE_TYPE[response]
@@ -103,6 +106,9 @@ class keithley2400():
 
     @property
     def measure_type(self):
+        """The type of measurement the Keithley 2400 SourceMeter will make.
+
+        Expected value: voltage, current, resistance."""
         MEASURE_TYPE = {'VOLT:DC': 'voltage', 'CURR:DC': 'current', 'RES': 'resistance'}
         measure_type_response = self._instrument.query("sense:function?").strip().replace('\"','').split(',')[-1]
         return MEASURE_TYPE[response]
@@ -119,6 +125,9 @@ class keithley2400():
 
     @property
     def resistance_ohms_mode(self):
+        """The mode for measuring resistance.
+
+        Expected value: manual, auto."""
         MODES = {'MAN': 'manual', 'AUTO': 'auto'}
         response = self._instrument.query('sense:resistance:mode?').strip()
         return MODES[response]
@@ -145,6 +154,9 @@ class keithley2400():
 
     @property
     def four_wire_sensing(self):
+        """Queries/sets four-wire sensing.
+
+        Setting expects: True, False."""
         response = self._instrument.query('system:rsense?').strip()
         return bool(int(response))
 

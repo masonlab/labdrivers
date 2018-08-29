@@ -1,6 +1,7 @@
 import socket
 
-class triton200():
+
+class Triton200():
 
     RUO2_CHANNEL = '5'
     CERNOX_CHANNEL = '6'
@@ -14,12 +15,9 @@ class triton200():
         Constructor for the Triton200 class.
 
         :param ip_address: The IP address of the Triton 200.
-
         :param port_number: The associated port number of the Triton 200.
         (default: 33756, as per the Triton 200 manual)
-
         :param timeout: How long to wait for a response. (default: 10000)
-
         :param bytes_to_read: How many bytes to accept from the response.
         (defualt: 2048)
         """
@@ -37,22 +35,18 @@ class triton200():
     @property
     def temperature_channel(self):
         return self._temperature_channel
-    
 
     @channel.setter
     def temperature_channel(self, value):
         self._temperature_channel = str(value)
 
-
     @property
     def temperature_setpoint(self):
        return self._temperature_setpoint
 
-
     @temperature_setpoint.setter
     def temperature_setpoint(self, value):
         self._temperature_setpoint = value
-
 
     @property
     def temperature(self):
@@ -62,11 +56,9 @@ class triton200():
 
         return self.extract_value(response, noun)
 
-
     def change_heater_focus(self):
         command = 'SET:DEV:T' + str(self._temperature_channel) + ':TEMP:LOOP:HTR:H' + str(self._heater_channel) + '\r\n'
         response = self.query_and_receive(command)
-
 
     def change_heater_range(self):
         heater_index = (  (self.temperature_setpoint > 0.030)
@@ -79,26 +71,21 @@ class triton200():
         command = 'SET:DEV:T' + str(self._temperature_channel) + ':TEMP:LOOP:RANGE:' + heater_current + '\r\n'
         response = self.query_and_receive(command)
 
-
     def controlled_ramp_on(self):
         command = 'SET:DEV:T' + str(self._temperature_channel) + 'TEMP:LOOP:RAMP:ENAB:ON\r\n'
         response = self.query_and_receive(command)
-
 
     def controlled_ramp_off(self):
         command = 'SET:DEV:T' + str(self._temperature_channel) + 'TEMP:LOOP:RAMP:ENAB:OFF\r\n'
         response = self.query_and_receive(command)
 
-
     def turbo_on(self):
         command = 'SET:DEV:TURB' + self._turbo_channel + ':PUMP:SIG:STATE:ON\r\n'
         response = self.query_and_receive(command)
 
-
     def turbo_off(self):
         command = 'SET:DEV:TURB' + self._turbo_channel + ':PUMP:SIG:STATE:OFF\r\n'
         response = self.query_and_receive(command)
-
 
     def query_and_receive(self, command):
         """
@@ -109,12 +96,12 @@ class triton200():
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect(self._address)
             s.settimeout(self._timeout)
-            s.sendall(command)
+            s.sendall(command.encode())
             response = s.recv(self._bytes_to_read).decode()
 
         return response
 
-
+    @staticmethod
     def extract_value(self, response, noun):
         expected_response = 'STAT:' + noun + ':'
         value = float(response.replace(expected_response, '').strip('\n'))
