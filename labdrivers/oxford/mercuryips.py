@@ -3,14 +3,14 @@ import socket
 import visa
 
 
-class MercuryIps:
+class MercuryIps():
 
     PORT_NO = 7020
     STR_FORMAT = '{.3f}'
 
     # Magnet class
 
-    class Magnet:
+    class Magnet():
 
         def __init__(self, axis, mode='ip', resource_name=None, ip_address=None, timeout=10.0,
                      bytes_to_read=2048):
@@ -58,13 +58,13 @@ class MercuryIps:
             :return: The MercuryIPS response
             """
             instr = self.resource_manager.open_resource(self.resource_name)
-            response = instr.query_visa(command)
+            response = instr.query(command)
             instr.close()
 
             return response
 
         @staticmethod
-        def extract_value(response, noun):
+        def extract_value(response, noun, unit):
             """Finds the value that is contained within the response to a previously sent query.
             
             :param response: The response from a query.
@@ -72,7 +72,7 @@ class MercuryIps:
             :return: A floating-point value of the response, but without units.
             """
             expected_response = 'STAT:' + noun + ':'
-            value = float(response.replace(expected_response, '').strip('\n'))
+            value = float(response.replace(expected_response, '').strip('\n').replace(unit, ''))
             return value
 
         QUERY_AND_RECEIVE = {'ip': query_ip, 'visa': query_visa}
@@ -81,77 +81,77 @@ class MercuryIps:
         def field_setpoint(self):
             noun = 'DEV:' + self.axis + ':PSU:SIG:FSET'
             command = 'READ:' + noun + '\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](command)
-            return self.extract_value(response, noun)
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
+            return self.extract_value(response, noun, 'T')
 
         @field_setpoint.setter
         def field_setpoint(self, value):
-            setpoint = MercuryIps.STR_FORMAT.format(value)
+            setpoint = str(value)
             self._field_setpoint = setpoint
             command = 'SET:DEV:' + self.axis + ':PSU:SIG:FSET:' + setpoint + '\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](command)
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
         @property
         def field_ramp_rate(self):
             noun = 'DEV:' + self.axis + ':PSU:SIG:RFST'
             command = 'READ:' + noun + '\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](command)
-            return self.extract_value(response, noun)
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
+            return self.extract_value(response, noun, 'T/m')
 
         @field_ramp_rate.setter
         def field_ramp_rate(self, value):
-            ramp_rate = MercuryIps.STR_FORMAT.format(value)
+            ramp_rate = str(value)
             command = 'SET:DEV:' + self.axis + ':PSU:SIG:RFST:' + ramp_rate + '\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](command)
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
         @property
         def current_setpoint(self):
             noun = 'DEV:' + self.axis + ':PSU:SIG:CSET'
             command = 'READ:' + noun + '\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](command)
-            return self.extract_value(response, noun)
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
+            return self.extract_value(response, noun, 'A')
 
         @current_setpoint.setter
         def current_setpoint(self, value):
-            setpoint = MercuryIps.STR_FORMAT.format(value)
+            setpoint = str(value)
             command = 'SET:DEV:' + self.axis + ':PSU:SIG:CSET' + setpoint + '\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](command)
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
         @property
         def current_ramp_rate(self):
             noun = 'DEV:' + self.axis + ':PSU:SIG:RCST'
             command = 'READ:' + noun + '\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](command)
-            return self.extract_value(response, noun)
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
+            return self.extract_value(response, noun, 'A/m')
 
         @current_ramp_rate.setter
         def current_ramp_rate(self, value):
-            ramp_rate = MercuryIps.STR_FORMAT.format(value)
+            ramp_rate = str(value)
             command = 'SET:DEV:' + self.axis + ':PSU:SIG:RCST' + ramp_rate + '\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](command)
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
         @property
         def magnetic_field(self):
             noun = 'DEV:' + self.axis + ':PSU:SIG:FLD'
             command = 'READ:' + noun + '\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](command)
-            return self.extract_value(response, noun)
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
+            return self.extract_value(response, noun, 'T')
 
         def ramp_to_setpoint(self):
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:RTOS\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](command)
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
         def ramp_to_zero(self):
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:RTOZ\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](command)
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
         def output_on(self):
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:HOLD\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](command)
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
         def output_off(self):
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:CLMP\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](command)
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
     def __init__(self, mode = 'ip',
                     resource_name = None,

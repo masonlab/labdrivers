@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 
 
-class sr830():
+class Sr830():
     """A class to interface with the SR830 lockin amplifier
 
     :param GPIBaddr: the GPIB address of the instrument

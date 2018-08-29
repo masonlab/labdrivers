@@ -19,7 +19,7 @@ have to remember all of the code in the API.
 import visa
 
 
-class keithley2400():
+class Keithley2400():
 
     def __init__(self, gpib_addr=23):
         '''

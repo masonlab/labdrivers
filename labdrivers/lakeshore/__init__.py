@@ -1,1 +1,1 @@
-from .ls332 import ls332
+from .ls332 import Ls332

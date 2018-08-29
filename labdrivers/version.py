@@ -2,8 +2,8 @@ from os.path import join as pjoin
 
 # Format expected by setup.py and doc/source/conf.py: string of form "X.Y.Z"
 _version_major = 0
-_version_minor = 8
-_version_micro = 1  # use '' for first of series, number for 1 and above
+_version_minor = 9
+_version_micro = ''  # use '' for first of series, number for 1 and above
 _version_extra = 'dev'
 # _version_extra = ''  # Uncomment this for full releases
 
@@ -76,4 +76,4 @@ PACKAGES = ['labdrivers',
             'labdrivers.oxford',
             'labdrivers.ni']
 PACKAGE_DATA = {'labdrivers': [pjoin('data', '*')]}
-REQUIRES = ["pyvisa", "pythonnet", "PyDAQmx"]
+REQUIRES = ["pyvisa", "PyDAQmx", "pythonnet"]
