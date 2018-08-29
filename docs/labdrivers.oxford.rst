@@ -6,20 +6,20 @@ labdrivers.oxford
    :maxdepth: 4
 
 
-.. autoclass:: labdrivers.oxford.itc503.itc503
+.. autoclass:: labdrivers.oxford.itc503.Itc503
     :members:
     :undoc-members:
 
 
-.. autoclass:: labdrivers.oxford.ips120.ips120
+.. autoclass:: labdrivers.oxford.ips120.Ips120
     :members:
     :undoc-members:
 
 
-.. autoclass:: labdrivers.oxford.mercuryips.mercuryips
+.. autoclass:: labdrivers.oxford.mercuryips.MercuryIps
     :members:
     :undoc-members:
 
-.. autoclass:: labdrivers.oxford.triton200.triton200
+.. autoclass:: labdrivers.oxford.triton200.Triton200
     :members:
     :undoc-members:
