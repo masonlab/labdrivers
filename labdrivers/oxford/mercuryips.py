@@ -79,6 +79,7 @@ class MercuryIps():
 
         @property
         def field_setpoint(self):
+            """The magnetic field setpoint in Tesla along the magnet axis."""
             noun = 'DEV:' + self.axis + ':PSU:SIG:FSET'
             command = 'READ:' + noun + '\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
@@ -86,13 +87,21 @@ class MercuryIps():
 
         @field_setpoint.setter
         def field_setpoint(self, value):
-            setpoint = str(value)
-            self._field_setpoint = setpoint
-            command = 'SET:DEV:' + self.axis + ':PSU:SIG:FSET:' + setpoint + '\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
+            if ( (self.axis == 'GRPZ' and (-6 <= value <= 6)) or
+                    ((self.axis == 'GRPX' or self.axis == 'GRPY') and (-1 <= value <= 1)) ):
+                setpoint = str(value)
+                self._field_setpoint = setpoint
+                command = 'SET:DEV:' + self.axis + ':PSU:SIG:FSET:' + setpoint + '\n'
+                response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
+
+                if not response:
+                    raise RuntimeError("No response from the MercuryIps after querying the field setpoint.")
+            else:
+                raise RuntimeError("The setpoint must be within the proper limits.")
 
         @property
         def field_ramp_rate(self):
+            """The magnetic field ramp rate in Tesla per minute along the magnet axis."""
             noun = 'DEV:' + self.axis + ':PSU:SIG:RFST'
             command = 'READ:' + noun + '\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
@@ -106,6 +115,7 @@ class MercuryIps():
 
         @property
         def current_setpoint(self):
+            """The setpoint of the current for a magnet in Amperes."""
             noun = 'DEV:' + self.axis + ':PSU:SIG:CSET'
             command = 'READ:' + noun + '\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
@@ -119,6 +129,7 @@ class MercuryIps():
 
         @property
         def current_ramp_rate(self):
+            """The ramp rate of the current for a magnet in Amperes per minute."""
             noun = 'DEV:' + self.axis + ':PSU:SIG:RCST'
             command = 'READ:' + noun + '\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
@@ -138,18 +149,27 @@ class MercuryIps():
             return self.extract_value(response, noun, 'T')
 
         def ramp_to_setpoint(self):
+            """Ramps a magnet to the setpoint."""
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:RTOS\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
         def ramp_to_zero(self):
+            """Ramps a magnet from its current magnetic field to zero field."""
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:RTOZ\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
-        def output_on(self):
+        def hold(self):
+            """Puts a magnet in a HOLD state.
+            
+            This action does one of the following:
+            1) Stops a ramp
+            2) Allows the field and current to ramp
+            """
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:HOLD\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
-        def output_off(self):
+        def clamp(self):
+            """Puts a magnet in a CLAMP state."""
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:CLMP\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 

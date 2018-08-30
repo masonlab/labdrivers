@@ -10,13 +10,13 @@ class Triton200():
 
     HEATER_RANGE = ['0.316', '1', '3.16', '10', '31.6', '100']
 
-    def __init__(self, ip_address, port_number = 33756, timeout = 10000, bytes_to_read = 2048):
+    def __init__(self, ip_address, port_number = 33576, timeout = 10000, bytes_to_read = 2048):
         """
         Constructor for the Triton200 class.
 
         :param ip_address: The IP address of the Triton 200.
         :param port_number: The associated port number of the Triton 200.
-        (default: 33756, as per the Triton 200 manual)
+        (default: 33576, as per the Triton 200 manual)
         :param timeout: How long to wait for a response. (default: 10000)
         :param bytes_to_read: How many bytes to accept from the response.
         (defualt: 2048)
