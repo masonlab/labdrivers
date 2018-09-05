@@ -22,17 +22,18 @@ Coding conventions
 
 The drivers in the labdrivers package follow the following conventions:
 
-- Class names are all lowercase, e.g.::
+- Class names are all CamcelCase, e.g.::
 
-    keithley2400
-    sr830
-    dynacool
+    Keithley2400
+    Sr830
+    Dynacool
 
-- Method names are in 'CamelCase', e.g.::
+- Method names are in lower case (there are exceptions,
+  like in the Quantum Design instruments classes), e.g.::
 
-    setField
-    setTemperature
-    measurePoint
+    measure_single_point
+    auto_gain
+    set_output_voltage
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

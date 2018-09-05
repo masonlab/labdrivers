@@ -15,3 +15,6 @@ example_nbs/.ipynb_checkpoints/
 build/
 dist/
 *.egg-info
+
+.idea/
+.idea*

@@ -33,7 +33,7 @@ except OSError:
     logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
 
 
-class Ips120():
+class Ips120:
     
     def __init__(self, GPIBaddr):
         """Connect to an IPS 120-10 at the specified GPIB address
