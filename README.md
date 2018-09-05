@@ -28,7 +28,7 @@ You may install using:
 
 `pip install labdrivers`
 
-`pip` will also automatically install `pyvisa`, `PyDAQmx`, and `pythonnet` if they are not already installed. Installation of `pythonnet` is usually the failure point of this pip installation procedure, so it would be recommended to try installing that first to ensure that the rest of the installation will succeed. Note that `pythonnet` is compatible with Python 3.6 at most (see its repository), and that it requires non-Python
+`pip` will also automatically install `pyvisa`, `PyDAQmx`, and `pythonnet` if they are not already installed. Installation of `pythonnet` is usually the failure point of this pip installation procedure, so it would be recommended to try installing that first to aid in troubleshooting what the problems are (if there are any!). Note that `pythonnet` is compatible with Python 3.6 at most (see its repository), and that it requires non-Python
 dependencies like .NET 4.0+. As of writing this, it is not entirely clear what else is required, though errors regarding Cython have been
 observed. It might not hurt to have other C/C++ related things installed, like Visual Studio (if you're on Windows).
 
@@ -43,4 +43,4 @@ guiding design principles please see [here](http://labdrivers.readthedocs.org/en
 
 Also, Before submitting a request please
 make sure your code follows the PEP8 Python style guidelines (except for the
-one concerning maximum line length. 
+one concerning maximum line length). 
