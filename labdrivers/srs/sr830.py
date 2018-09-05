@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 
 
-class Sr830():
+class Sr830:
     """A class to interface with the SR830 lockin amplifier
 
     :param GPIBaddr: the GPIB address of the instrument
@@ -46,23 +46,7 @@ class Sr830():
         
         self._gpib_addr = GPIBaddr
         self._instrument = None
-
-
-    def __enter__(self):
         self._instrument = self.resource_manager.open_resource("GPIB::%d" % self._gpib_addr)
-
-
-    def __exit__(self):
-        self._instrument.close()
-
-
-    def enable_remote(self):
-        self._instrument = self.resource_manager.open_resource("GPIB::%d" % self._gpib_addr)
-
-
-    def disable_remote(self):
-        self._instrument.close()
-
 
     @property
     def sync_filter(self):
@@ -71,14 +55,12 @@ class Sr830():
         """
         return self._instrument.query_ascii_values('SYNC?')[0]
 
-
     @sync_filter.setter
     def sync_filter(self, value):
         if isinstance(value, bool):
             self._instrument.query_ascii_values('SYNC {}'.format(int(value)))
         else:
             raise RuntimeError('Sync filter input expects [True|False].')
-
 
     @property
     def low_pass_filter_slope(self):

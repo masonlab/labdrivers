@@ -40,10 +40,7 @@ class Triton200:
 
     @temperature_channel.setter
     def temperature_channel(self, value):
-        if str(value) in Triton200.VALID_CHANNELS:
-            self._temperature_channel = str(value)
-        else:
-            raise RuntimeError("Tried to set temperature channel to a forbidden channel.")
+        self._temperature_channel = str(value)
 
     @property
     def temperature_setpoint(self):

@@ -3,14 +3,13 @@ import socket
 import visa
 
 
-class MercuryIps():
+class MercuryIps:
 
     PORT_NO = 7020
-    STR_FORMAT = '{.3f}'
 
     # Magnet class
 
-    class Magnet():
+    class Magnet:
 
         def __init__(self, axis, mode='ip', resource_name=None, ip_address=None, timeout=10.0,
                      bytes_to_read=2048):
@@ -75,6 +74,7 @@ class MercuryIps():
             value = float(response.replace(expected_response, '').strip('\n').replace(unit, ''))
             return value
 
+        # Employing hash tables instead of if-else trees
         QUERY_AND_RECEIVE = {'ip': query_ip, 'visa': query_visa}
 
         @property
@@ -158,6 +158,14 @@ class MercuryIps():
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:RTOZ\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
+        def ramping(self):
+            """Queries if magnet is ramping."""
+            # ask if ramping to zero
+            command = 'READ:DEV:' + self.axis + ':PSU:ACTN:RTOZ\n'
+            # ask if ramping to set
+            command = 'READ:DEV:' + self.axis + ':PSU:ACTN:RTOS\n'
+            # TODO: find out what kind of response you expect
+
         def hold(self):
             """Puts a magnet in a HOLD state.
             
@@ -168,10 +176,22 @@ class MercuryIps():
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:HOLD\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
+        def holding(self):
+            """Queries if magnet is in a HOLD state."""
+            command = 'READ:DEV:' + self.axis + ':PSU:ACTN:HOLD\n'
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
+            # TODO: find out what kind of response you expect
+
         def clamp(self):
             """Puts a magnet in a CLAMP state."""
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:CLMP\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
+
+        def clamped(self):
+            """Queries if magnet is in a CALMP state."""
+            command = 'READ:DEV:' + self.axis + ':PSU:ACTN:CLMP\n'
+            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
+            # TODO: find out what kind of response you expect
 
     def __init__(self, mode = 'ip',
                     resource_name = None,
