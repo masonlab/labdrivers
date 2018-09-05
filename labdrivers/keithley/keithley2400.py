@@ -1,25 +1,7 @@
-"""
-Author: pbnjeff89 (Jeff Damasco)
-Version: 2.0
-
-- More control over individual components
-- No more glitches/annoyances with -420 errors due to unterminated queries
-- No more use of pandas
-
-Some of this class structure was inspired by large chunks of code from
-Henry's old class. I chose to move in a slightly different direction
-because the old class was very restrictive in its use and also gave
-errors whenever the Sourcemeter was used for gating.
-
-Here, this version adds in the trace/buffer commands individually but will
-also give a limited implementation of sweeps so that the user does not
-have to remember all of the code in the API.
-"""
-
 import visa
 
 
-class Keithley2400():
+class Keithley2400:
 
     def __init__(self, gpib_addr=23):
         '''
@@ -34,23 +16,7 @@ class Keithley2400():
         except OSError:
             logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
 
-        self._instrument = None
-
-    def __enter__(self):
-        '''Opens handle for Keithley 2400 Sourcemeter.'''
         self._instrument = self._resource_manager.open_resource("GPIB::{}".format(self.gpib_addr))
-
-    def __exit__(self):
-        '''Closes handle for Keithley 2400 Sourcemeter.'''
-        self._instrument.close()
-
-    def enable_remote(self):
-        '''Opens a handle for the Keithley 2400 Sourcemeter.'''
-        self._instrument = self._resource_manager.open_resource("GPIB::{}".format(self.gpib_addr))
-
-    def disable_remote(self):
-        '''Closes the handle for the Keithley 2400 Sourcemeter.'''
-        self._instrument.close()
 
     @property
     def gpib_addr(self):
