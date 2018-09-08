@@ -6,6 +6,7 @@ Driver APIs
    :maxdepth: 2
 
    labdrivers.keithley
+   labdrivers.lakeshore
    labdrivers.oxford
    labdrivers.quantumdesign
    labdrivers.srs
