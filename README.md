@@ -80,9 +80,13 @@ You may install using:
 
 `pip install labdrivers`
 
-`pip` will also automatically install `pyvisa`, `PyDAQmx`, and `pythonnet` if they are not already installed.
-Installation of `pythonnet` is usually the failure point of this pip installation procedure, so it would be
-recommended to try installing that first to ensure that the rest of the installation will succeed.
+`pip` will also automatically install `pyvisa` and `PyDAQmx` if they are not already installed.
+
+#### Using the Quantum Design instruments package
+
+In order for `labdrivers` to read through the C# code of the Quantum Design DLL file, `pythonnet` is required.
+In principle, `pythonnet` could be included in the pip-installation but there have been many issues with the
+documentation not building and installation issues that have been traced back to installing this module.
 Note that `pythonnet` is compatible with Python 3.6 at most (see its repository), and that it requires non-Python
 dependencies like .NET 4.0+. As of writing this, it is not entirely clear what else is required,
 though errors regarding Cython have been observed. It might not hurt to have other C/C++ related things installed,
