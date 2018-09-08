@@ -4,23 +4,18 @@ import visa
 class Keithley2400:
 
     def __init__(self, gpib_addr=23):
-        '''
+        """
         Constructor for Keithley 2400 Sourcemeter
 
         :param gpib_addr: GPIB address (configured on Keithley 2400)
-        '''
+        """
         self._gpib_addr = str(gpib_addr)
-        
-        try:
-            self._resource_manager = visa.ResourceManager()
-        except OSError:
-            logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
-
+        self._resource_manager = visa.ResourceManager()
         self._instrument = self._resource_manager.open_resource("GPIB::{}".format(self.gpib_addr))
 
     @property
     def gpib_addr(self):
-        '''Returns the GPIB address of the Keithley 2400 Sourcemeter.'''
+        """Returns the GPIB address of the Keithley 2400 Sourcemeter."""
         return self._gpib_addr
 
     # source functions
@@ -31,8 +26,8 @@ class Keithley2400:
 
         Expected values: voltage, current."""
         response = self._instrument.query("source:function:mode?").strip()
-        SOURCE_TYPE = {'VOLT': 'voltage', 'CURR': 'current'}
-        return SOURCE_TYPE[response]
+        source_type = {'VOLT': 'voltage', 'CURR': 'current'}
+        return source_type[response]
 
     @source_type.setter
     def source_type(self, value):
@@ -75,15 +70,15 @@ class Keithley2400:
         """The type of measurement the Keithley 2400 SourceMeter will make.
 
         Expected value: voltage, current, resistance."""
-        MEASURE_TYPE = {'VOLT:DC': 'voltage', 'CURR:DC': 'current', 'RES': 'resistance'}
-        measure_type_response = self._instrument.query("sense:function?").strip().replace('\"','').split(',')[-1]
-        return MEASURE_TYPE[response]
+        measure_type = {'VOLT:DC': 'voltage', 'CURR:DC': 'current', 'RES': 'resistance'}
+        measure_type_response = self._instrument.query("sense:function?").strip().replace('\"', '').split(',')[-1]
+        return measure_type[measure_type_response]
 
     @measure_type.setter
     def measure_type(self, value):
-        MEASURE_TYPE = {'voltage':'\'VOLTAGE:DC\'', 'current':'\'CURRENT:DC\'', 'resistance':'RESISTANCE'}
-        if value.lower() in MEASURE_TYPE:
-            self._instrument.write("sense:function:ON {}".format(MEASURE_TYPE[value.lower()]))
+        measure_type = {'voltage': '\'VOLTAGE:DC\'', 'current': '\'CURRENT:DC\'', 'resistance': 'RESISTANCE'}
+        if value.lower() in measure_type:
+            self._instrument.write("sense:function:ON {}".format(measure_type[value.lower()]))
         else:
             raise RuntimeError('Expected a value from [\'voltage\'|\'current\'|\'resistance\'')
 
@@ -94,15 +89,15 @@ class Keithley2400:
         """The mode for measuring resistance.
 
         Expected value: manual, auto."""
-        MODES = {'MAN': 'manual', 'AUTO': 'auto'}
+        modes = {'MAN': 'manual', 'AUTO': 'auto'}
         response = self._instrument.query('sense:resistance:mode?').strip()
-        return MODES[response]
+        return modes[response]
 
     @resistance_ohms_mode.setter
     def resistance_ohms_mode(self, value):
-        MODES = {'manual': 'MAN', 'auto': 'AUTO'}
-        if value.lower() in MODES.keys():
-            self._instrument.write('sense:resistance:mode {}'.format(MODES[value.lower()]))
+        modes = {'manual': 'MAN', 'auto': 'AUTO'}
+        if value.lower() in modes.keys():
+            self._instrument.write('sense:resistance:mode {}'.format(modes[value.lower()]))
         else:
             raise RuntimeError('Expected a value from [\'manual\'|\'auto\']')
 
@@ -161,7 +156,7 @@ class Keithley2400:
 
     def within_voltage_compliance(self):
         response = self._instrument.query('SENS:VOLT:PROT:TRIP?').strip()
-        return (not bool(int(response)))
+        return not bool(int(response))
 
     # Current sensing and compilance
 
@@ -171,7 +166,7 @@ class Keithley2400:
         return float(response)
 
     @expected_current_reading.setter
-    def expected_current_reading(self):
+    def expected_current_reading(self, value):
         if isinstance(value, int) or isinstance(value, float):
             self._instrument.write('sense:current:range {}'.format(value))
         else:
@@ -191,15 +186,15 @@ class Keithley2400:
 
     def within_current_compliance(self):
         response = self._instrument.query('SENS:CURR:PROT:TRIP?').strip()
-        return (not bool(int(response)))
+        return not bool(int(response))
 
     # Output configuration
 
     @property
     def output(self):
-        OUTPUT = {'0':'off', '1':'on'}
+        output = {'0': 'off', '1': 'on'}
         response = self._instrument.query("OUTP?").strip()
-        return OUTPUT[response]
+        return output[response]
 
     @output.setter
     def output(self, value):
@@ -210,15 +205,15 @@ class Keithley2400:
 
     @property
     def output_off_mode(self):
-        MODES = {'HIMP': 'high impedance', 'NORM': 'normal', 'ZERO': 'zero', 'GUAR': 'guard'}
+        modes = {'HIMP': 'high impedance', 'NORM': 'normal', 'ZERO': 'zero', 'GUAR': 'guard'}
         response = self._instrument.query('OUTP:SMOD?').strip()
-        return MODES[response]
+        return modes[response]
 
     @output_off_mode.setter
     def output_off_mode(self, value):
-        MODES = {'high impedance': 'HIMP', 'himp': 'HIMP', 'normal': 'NORM', 'norm': 'NORM',
+        modes = {'high impedance': 'HIMP', 'himp': 'HIMP', 'normal': 'NORM', 'norm': 'NORM',
                  'zero': 'ZERO', '0': 'ZERO', 'guard': 'GUARD'}
-        self._instrument.write('OUTP:SMOD {}'.format(MODES[value.lower()]))
+        self._instrument.write('OUTP:SMOD {}'.format(modes[value.lower()]))
 
     # Data acquisition
 
@@ -245,15 +240,14 @@ class Keithley2400:
 
     @property
     def trigger(self):
-        TRIGGERS =  {   'IMM': 'immediate',         'TLIN': 'trigger link',         'TIM': 'timer',
-                        'MAN': 'manual',            'BUS': 'bus trigger',           'NST': 'low SOT pulse',
-                        'PST': 'high SOT pulse',    'BST': 'high or low SOT pulse'
-                    }
-        return TRIGGERS[self._instrument.query('trigger:source?')]
+        triggers = {'IMM': 'immediate',         'TLIN': 'trigger link',         'TIM': 'timer',
+                    'MAN': 'manual',            'BUS': 'bus trigger',           'NST': 'low SOT pulse',
+                    'PST': 'high SOT pulse',    'BST': 'high or low SOT pulse'}
+        return triggers[self._instrument.query('trigger:source?')]
 
     @trigger.setter
     def trigger(self, trigger):
-        TRIGGERS = {
+        triggers = {
             'imm': 'IMM', 'immediate': 'IMM',
             'tlin': 'TLIN', 'tlink': 'TLIN', 'trigger link': 'TLIN',
             'tim': 'TIM', 'timer': 'TIM',
@@ -263,7 +257,7 @@ class Keithley2400:
             'pst': 'PST', 'high SOT pulse': 'PST',
             'bst': 'BST', 'high or low SOT pulse': 'BST'
         }
-        if trigger.lower() in TRIGGERS.keys():
+        if trigger.lower() in triggers.keys():
             self._instrument.query('trigger:source {}'.format(trigger))
         else:
             raise RuntimeError('Unexpected trigger input. See documentation for details.')
@@ -332,7 +326,8 @@ class Keithley2400:
     def read_trace(self):
         """Read contents of buffer."""
         trace = self._instrument.query('trace:data?').strip().split(',')
-        trace = [float(x) for x in trace]
+        trace_list = [float(x) for x in trace]
+        return trace_list
 
     def clear_trace(self):
         """Clear buffer."""
@@ -341,6 +336,7 @@ class Keithley2400:
     def buffer_memory_status(self):
         """Check buffer memory status."""
         response = self._instrument.query('trace:free?')
+        return response
 
     def fill_buffer(self):
         """Fill buffer and stop."""
@@ -350,7 +346,7 @@ class Keithley2400:
         """Disable buffer."""
         self._instrument.write('trace:feed:control never')
 
-    # Sweeeping
+    # Sweeping
 
     # TODO: implement these!!!
 
@@ -418,10 +414,6 @@ class Keithley2400:
     def sweep_direction(self, direction):
         pass
 
-    # Pre-made commands
-
-    # TODO: make stuff
-
     # Common commands
 
     def clear_status(self):
@@ -435,15 +427,12 @@ class Keithley2400:
     def identify(self):
         """Returns manufacturer, model number, serial number, and firmware revision levels."""
         response = self._instrument.write('*idn?')
-        return  {   'manufacturer': response[0],
-                    'model': response[1],
-                    'serial number': response[2],
-                    'firmware revision level': response[3]
+        return {'manufacturer': response[0],
+                'model': response[1],
+                'serial number': response[2],
+                'firmware revision level': response[3]
                 }
 
     def send_bus_trigger(self):
         """Sends bus trigger to SourceMeter."""
         self._instrument.write('*trg')
-
-
-    
