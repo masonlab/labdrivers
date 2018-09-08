@@ -5,34 +5,30 @@ from PyDAQmx import Task
 
 
 class Nidaq:
-    """Class to interface with a National Instruments BNC-2110 DAC
+    """Class to interface with a National Instruments DAQ
     
     Built on top of PyDAQmx. 
     
     For task.<function> call signature explanations see:
         All Programs -> National Instruments -> NI-DAQ -> Text-based Code Support
                      -> NI-DAQmx C Reference Help
-        
-        """
+    """
     
     def __init__(self, device='Dev1'):
-        self._device = device
+        self.device = device
         self._channel = None
-
-    @property
-    def device(self):
-        return self._device
 
     def reset(self):
         """Reset the device. Equivalent to <R click> -> Reset in NI MAX"""
         PyDAQmx.DAQmxResetDevice(self.device)
     
     def output_voltage(self, channel, output=0):
-        """Set the voltage output level of `channel` to `output`
-        
-        Args:
-            channel(str): the name of the channel to use
-            output(float): the value to output"""
+        """Outputs a voltage from the NI DAQ.
+
+        :param channel: The name of the channel for output.
+        :param output: The value of the output in Volts
+        :return: None
+        """
         
         task = Task()
 
@@ -65,11 +61,12 @@ class Nidaq:
         task.StopTask()
         
     def output_current(self, channel, output=0):
-        """Set the current output level of `channel` to `output`
-        
-        Args:
-            channel(str): the name of the channel to use
-            output(float): the value to output"""
+        """Outputs a current from the NI DAQ.
+
+        :param channel: The name of the channel for output.
+        :param output: The value of the output in Amps
+        :return: None
+        """
         
         task = Task()
 

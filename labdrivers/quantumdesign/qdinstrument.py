@@ -43,6 +43,7 @@ class QdInstrument:
     def getTemperature(self):
         """Returns the instrument temperature in Kelvin.
 
+        Parameters are from:
         SetTemperature(double Temperature, double Rate, QDInstrumentBase.TemperatureApproach Approach)
         """
         return self.qdi_instrument.GetTemperature(0, 0)
@@ -50,11 +51,12 @@ class QdInstrument:
     def setTemperature(self, temp, rate=10):
         """Ramps the instrument temperature to the set point.
 
+        Parameters are from:
         GetTemperature(ref double Temperature, ref QDInstrumentBase.TemperatureStatus Status)
 
         :param temp: Desired temperature in Kelvin
         :param rate: Temperature ramp rate in Kelvin/min.
-        :return:
+        :return: None
         """
         if 0 <= temp <= 400:
             return self.qdi_instrument.SetTemperature(temp, rate, 0)
@@ -75,6 +77,7 @@ class QdInstrument:
     def getField(self):
         """Returns the Magnetic field in Gauss.
 
+        Parameters are from:
         GetField(ref double Field, ref QDInstrumentBase.FieldStatus Status)
 
         :return: Field in Gauss.
@@ -84,11 +87,12 @@ class QdInstrument:
     def setField(self, field, rate=200):
         """Ramps the instrument magnetic field to the set point.
 
+        Parameters are from:
         SetField(double Field, double Rate, QDInstrumentBase.FieldApproach Approach, QDInstrumentBase.FieldMode Mode)
 
         :param field: Set point of the applied magnetic field in Gauss.
         :param rate:  Ramp rate of the applied magnetic field in Gauss/sec.
-        :return:
+        :return: None
         """
         return self.qdi_instrument.SetField(field, rate, 0, 0)
 
@@ -116,6 +120,7 @@ class QdInstrument:
     def setPosition(self, position, speed):
         """Ramps the instrument position to the set point.
 
+        Parameters are from:
         SetPosition(string Axis, double Position, double Speed, QDInstrumentBase.PositionMode Mode)
 
         :param position: Position on the rotator to move to.
