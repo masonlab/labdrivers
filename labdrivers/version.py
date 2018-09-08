@@ -76,4 +76,4 @@ PACKAGES = ['labdrivers',
             'labdrivers.oxford',
             'labdrivers.ni']
 PACKAGE_DATA = {'labdrivers': [pjoin('data', '*')]}
-REQUIRES = ["pyvisa", "PyDAQmx", "pythonnet"]
+REQUIRES = ["pyvisa", "PyDAQmx"]
