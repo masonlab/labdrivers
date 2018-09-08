@@ -42,7 +42,7 @@ class Keithley2400:
 
     @property
     def source_mode(self):
-        """Mode of the source: [fixed | sweep | list]"""
+        """Get or set the mode of the source: [fixed | sweep | list]"""
         # TODO: test
         return self._instrument.query('source:' + self.source_type.lower() + ':mode?')
 
@@ -55,7 +55,7 @@ class Keithley2400:
 
     @property
     def source_value(self):
-        """Numeric value of the source chosen from keithley.source_type."""
+        """Get or set the numeric value of the source chosen from Keithley2400.source_type."""
         # TODO: test
         return self._instrument.query('source:' + self.source_type.lower() + ':level?')
 
@@ -86,9 +86,9 @@ class Keithley2400:
 
     @property
     def resistance_ohms_mode(self):
-        """The mode for measuring resistance.
+        """Get or set the resistance mode.
 
-        Expected value: manual, auto."""
+        Values: 'MAN', 'AUTO'"""
         modes = {'MAN': 'manual', 'AUTO': 'auto'}
         response = self._instrument.query('sense:resistance:mode?').strip()
         return modes[response]
@@ -103,6 +103,7 @@ class Keithley2400:
 
     @property
     def expected_ohms_reading(self):
+        """The expected range of a resistance reading from the device under test."""
         response = self._instrument.query('sense:resistance:range?').strip()
         return float(response)
 
@@ -132,6 +133,7 @@ class Keithley2400:
 
     @property
     def expected_voltage_reading(self):
+        """Gets or sets the expected voltage reading from the device under test."""
         response = self._instrument.query('sense:voltage:RANGE?').strip()
         return float(response)
 
@@ -144,6 +146,7 @@ class Keithley2400:
 
     @property
     def voltage_compliance(self):
+        """Gets or sets the voltage compliance."""
         response = self._instrument.query("SENS:VOLT:PROT:LEV?").strip()
         return float(response)
 
@@ -155,6 +158,9 @@ class Keithley2400:
             raise RuntimeError('Voltage compliance cannot be set. Value must be between 200 \u03BC' + 'V and 210 V.')
 
     def within_voltage_compliance(self):
+        """Queries if the Keithley is within voltage compliance.
+
+        :returns: True, False"""
         response = self._instrument.query('SENS:VOLT:PROT:TRIP?').strip()
         return not bool(int(response))
 
@@ -162,6 +168,7 @@ class Keithley2400:
 
     @property
     def expected_current_reading(self):
+        """Gets or sets the expected current reading from the device under test."""
         response = self._instrument.query('sense:current:range?').strip()
         return float(response)
 
@@ -218,6 +225,7 @@ class Keithley2400:
     # Data acquisition
 
     def read(self):
+        """Commands the Keithley 2400 to make a measurement based on its current measurement mode."""
         response = self._instrument.query('read?').strip()
         return float(response)
 
@@ -240,6 +248,9 @@ class Keithley2400:
 
     @property
     def trigger(self):
+        """Gets or sets the type of trigger to be used.
+
+        See documentation and source code for possible inputs."""
         triggers = {'IMM': 'immediate',         'TLIN': 'trigger link',         'TIM': 'timer',
                     'MAN': 'manual',            'BUS': 'bus trigger',           'NST': 'low SOT pulse',
                     'PST': 'high SOT pulse',    'BST': 'high or low SOT pulse'}
