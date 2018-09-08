@@ -34,7 +34,7 @@ Currently labdrivers contains drivers for the following instruments::
 		|-- mercuryips.py
 		`-- triton200.py
 	|-- quantumdesign
-	    `-- dynacool.py
+	    `-- qdinstrument.py
 	|-- srs
 	    `-- sr830.py
 
