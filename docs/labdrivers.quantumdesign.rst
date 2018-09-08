@@ -2,6 +2,10 @@
 labdrivers.quantumdesign 
 ##########################
 
+.. toctree::
+   :maxdepth: 8
+
+
 .. autoclass:: labdrivers.quantumdesign.qdinstrument.QdInstrument
     :members:
     :undoc-members:
