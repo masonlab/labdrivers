@@ -1,10 +1,10 @@
 import ctypes
-import numpy as np
 
 import PyDAQmx
 from PyDAQmx import Task
 
-class Nidaq():
+
+class Nidaq:
     """Class to interface with a National Instruments BNC-2110 DAC
     
     Built on top of PyDAQmx. 
@@ -18,29 +18,16 @@ class Nidaq():
     def __init__(self, device='Dev1'):
         self._device = device
         self._channel = None
-    
 
     @property
     def device(self):
         return self._device
 
-
-    @property
-    def channel(self):
-        return self._channel
-
-    
-    @channel.setter
-    def channel(self, value):
-        self._channel = value.lower()
-    
-
     def reset(self):
         """Reset the device. Equivalent to <R click> -> Reset in NI MAX"""
         PyDAQmx.DAQmxResetDevice(self.device)
     
-    
-    def output_voltage(self, output=0):
+    def output_voltage(self, channel, output=0):
         """Set the voltage output level of `channel` to `output`
         
         Args:
@@ -57,7 +44,7 @@ class Nidaq():
         #                                 float64 maxVal, 
         #                                 int32 units, 
         #                                 const char customScaleName[]);
-        task.CreateAOVoltageChan('/{}/{}'.format(self.device, self.channel),
+        task.CreateAOVoltageChan('/{}/{}'.format(self.device, channel),
                                  '',
                                  -10.0,
                                  10.0,
@@ -77,8 +64,7 @@ class Nidaq():
                                   None)
         task.StopTask()
         
-        
-    def output_current(self, output=0):
+    def output_current(self, channel, output=0):
         """Set the current output level of `channel` to `output`
         
         Args:
@@ -95,7 +81,7 @@ class Nidaq():
         #                                 float64 maxVal, 
         #                                 int32 units, 
         #                                 const char customScaleName[]);
-        task.CreateAOCurrentChan('/{}/{}'.format(self.device, self.channel),
+        task.CreateAOCurrentChan('/{}/{}'.format(self.device, channel),
                                  '',
                                  -10.0,
                                  10.0,
@@ -115,8 +101,7 @@ class Nidaq():
                                   None)
         task.StopTask()
 
-
-    def read_voltage(self, minVal=-10.0, maxVal=10.0):
+    def read_voltage(self, channel, minVal=-10.0, maxVal=10.0):
         """Read the voltage input level of `channel`
         
         Using narrow bounds (with minVal and maxVal) will improve accuracy
@@ -140,14 +125,13 @@ class Nidaq():
         #                                 float64 maxVal, 
         #                                 int32 units, 
         #                                 const char customScaleName[]);
-        task.CreateAIVoltageChan('/{}/{}'.format(self.device, self.channel),
+        task.CreateAIVoltageChan('/{}/{}'.format(self.device, channel),
                                  '',
                                  PyDAQmx.DAQmx_Val_Cfg_Default,
                                  minVal,
                                  maxVal,
                                  PyDAQmx.DAQmx_Val_Volts,
                                  None)
-
 
         task.StartTask()
         # from NI-DAQmx C Reference:
@@ -166,8 +150,7 @@ class Nidaq():
 
         return measured_point.value
 
-
-    def read_current(self, minVal=-10.0, maxVal=10.0):
+    def read_current(self, channel, minVal=-10.0, maxVal=10.0):
         """Read the current input level of `channel`
         
         Using narrow bounds (with minVal and maxVal) will improve accuracy
@@ -193,16 +176,15 @@ class Nidaq():
         #                                 int32 shuntResistorLoc, 
         #                                 float64 extShuntResistorVal, 
         #                                 const char customScaleName[]);
-        task.CreateAICurrentChan('/{}/{}'.format(self.device, self.channel),
+        task.CreateAICurrentChan('/{}/{}'.format(self.device, channel),
                                  '',
                                  PyDAQmx.DAQmx_Val_Cfg_Default,
-                                 -10.0,
-                                 10.0,
+                                 minVal,
+                                 maxVal,
                                  PyDAQmx.DAQmx_Val_Amps,
                                  PyDAQmx.DAQmx_Val_Default,
                                  1.0,
                                  None)
-
 
         task.StartTask()
         # from NI-DAQmx C Reference:
@@ -220,4 +202,3 @@ class Nidaq():
         task.StopTask()
 
         return measured_point.value
-

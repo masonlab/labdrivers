@@ -24,6 +24,8 @@ Currently labdrivers contains drivers for the following instruments::
 	labdrivers/
 	|-- keithley
 	    `-- keithley2400.py
+	|-- lakeshore
+	    `-- ls332.py
 	|-- ni
 	    `-- nidaq.py
 	|-- oxford

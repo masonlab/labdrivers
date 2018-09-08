@@ -4,7 +4,6 @@ import visa
 
 
 class MercuryIps:
-
     PORT_NO = 7020
 
     # Magnet class
@@ -67,7 +66,8 @@ class MercuryIps:
             """Finds the value that is contained within the response to a previously sent query.
             
             :param response: The response from a query.
-            :param noun: The part of the query that refers to the NOUN (refer to MercuryIPS documentation)
+            :param noun: The part of the query that refers to the NOUN (refer to MercuryIPS documentation).
+            :param unit: The measurement unit (e.g. K for Kelvin, T for Tesla).
             :return: A floating-point value of the response, but without units.
             """
             expected_response = 'STAT:' + noun + ':'
@@ -87,15 +87,14 @@ class MercuryIps:
 
         @field_setpoint.setter
         def field_setpoint(self, value):
-            if ( (self.axis == 'GRPZ' and (-6 <= value <= 6)) or
-                    ((self.axis == 'GRPX' or self.axis == 'GRPY') and (-1 <= value <= 1)) ):
+            if ((self.axis == 'GRPZ' and (-6 <= value <= 6)) or
+                    ((self.axis == 'GRPX' or self.axis == 'GRPY') and (-1 <= value <= 1))):
                 setpoint = str(value)
-                self._field_setpoint = setpoint
                 command = 'SET:DEV:' + self.axis + ':PSU:SIG:FSET:' + setpoint + '\n'
                 response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
                 if not response:
-                    raise RuntimeError("No response from the MercuryIps after querying the field setpoint.")
+                    raise RuntimeWarning("No response from the MercuryIps after querying the field setpoint.")
             else:
                 raise RuntimeError("The setpoint must be within the proper limits.")
 
@@ -113,6 +112,9 @@ class MercuryIps:
             command = 'SET:DEV:' + self.axis + ':PSU:SIG:RFST:' + ramp_rate + '\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
+            if not response:
+                raise RuntimeWarning("No response after setting a field ramp rate.")
+
         @property
         def current_setpoint(self):
             """The setpoint of the current for a magnet in Amperes."""
@@ -126,6 +128,9 @@ class MercuryIps:
             setpoint = str(value)
             command = 'SET:DEV:' + self.axis + ':PSU:SIG:CSET' + setpoint + '\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
+
+            if not response:
+                raise RuntimeWarning("No response after setting current set point.")
 
         @property
         def current_ramp_rate(self):
@@ -141,6 +146,9 @@ class MercuryIps:
             command = 'SET:DEV:' + self.axis + ':PSU:SIG:RCST' + ramp_rate + '\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
+            if not response:
+                raise RuntimeWarning("No response after setting current ramp rate.")
+
         @property
         def magnetic_field(self):
             noun = 'DEV:' + self.axis + ':PSU:SIG:FLD'
@@ -153,18 +161,25 @@ class MercuryIps:
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:RTOS\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
+            if not response:
+                raise RuntimeWarning("No response after attempting to ramp to set point.")
+
         def ramp_to_zero(self):
             """Ramps a magnet from its current magnetic field to zero field."""
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:RTOZ\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
+            if not response:
+                raise RuntimeWarning("No response after attempting to ramp to zero.")
+
         def ramping(self):
             """Queries if magnet is ramping."""
             # ask if ramping to zero
-            command = 'READ:DEV:' + self.axis + ':PSU:ACTN:RTOZ\n'
+            # command = 'READ:DEV:' + self.axis + ':PSU:ACTN:RTOZ\n'
             # ask if ramping to set
-            command = 'READ:DEV:' + self.axis + ':PSU:ACTN:RTOS\n'
+            # command = 'READ:DEV:' + self.axis + ':PSU:ACTN:RTOS\n'
             # TODO: find out what kind of response you expect
+            pass
 
         def hold(self):
             """Puts a magnet in a HOLD state.
@@ -176,26 +191,34 @@ class MercuryIps:
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:HOLD\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
+            if not response:
+                raise RuntimeWarning("No response after telling Mercury iPS to hold.")
+
         def holding(self):
             """Queries if magnet is in a HOLD state."""
-            command = 'READ:DEV:' + self.axis + ':PSU:ACTN:HOLD\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
+            # command = 'READ:DEV:' + self.axis + ':PSU:ACTN:HOLD\n'
+            # response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
             # TODO: find out what kind of response you expect
+            pass
 
         def clamp(self):
             """Puts a magnet in a CLAMP state."""
             command = 'SET:DEV:' + self.axis + ':PSU:ACTN:CLMP\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
 
-        def clamped(self):
-            """Queries if magnet is in a CALMP state."""
-            command = 'READ:DEV:' + self.axis + ':PSU:ACTN:CLMP\n'
-            response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
-            # TODO: find out what kind of response you expect
+            if not response:
+                raise RuntimeWarning("No response after telling Mercury iPS to clamp.")
 
-    def __init__(self, mode = 'ip',
-                    resource_name = None,
-                    ip_address = None, timeout=10.0, bytes_to_read=2048):
+        def clamped(self):
+            """Queries if magnet is in a CLAMP state."""
+            # command = 'READ:DEV:' + self.axis + ':PSU:ACTN:CLMP\n'
+            # response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
+            # TODO: find out what kind of response you expect
+            pass
+
+    def __init__(self, mode='ip',
+                 resource_name=None,
+                 ip_address=None, timeout=10.0, bytes_to_read=2048):
         """
         Parameters:
         :param mode: ['ip'|'visa']

@@ -19,7 +19,6 @@ import time
 import logging
 
 import visa
-from pyvisa.errors import VisaIOError
 
 # create a logger object for this module
 logger = logging.getLogger(__name__)
@@ -45,7 +44,6 @@ class Ips120:
         self._visa_resource.read_termination = '\r'
         self.setDisplay('tesla')
 
-
     def setControl(self, state=3):
         """Set the LOCAL / REMOTE control state of the IPS 120-10
 
@@ -62,7 +60,6 @@ class Ips120:
 
         self._visa_resource.write("$C{}".format(state))
 
-
     def readField(self):
         """Read the current magnetic field in Tesla
 
@@ -74,7 +71,6 @@ class Ips120:
         value_str = self._visa_resource.read()
 
         return float(value_str.strip('R+'))
-
 
     def readFieldSetpoint(self):
         """Read the current set point for the magnetic field in Tesla
@@ -88,7 +84,6 @@ class Ips120:
 
         return float(value_str.strip('R+'))
 
-
     def readFieldSweepRate(self):
         """Read the current magnetic field sweep rate in Tesla/min
 
@@ -100,7 +95,6 @@ class Ips120:
         value_str = self._visa_resource.read()
 
         return float(value_str.strip('R+'))
-
 
     def setActivity(self, state=1):
         """Set the field activation method
@@ -134,7 +128,6 @@ class Ips120:
 
         # TODO: add timer to account for time it takes for switch to activate
 
-
     def setFieldSetpoint(self, field):
         """Set the magnetic field set point, in Tesla
 
@@ -146,7 +139,6 @@ class Ips120:
 
         self._visa_resource.write("$J{}".format(field))
 
-
     def setFieldSweepRate(self, rate):
         """Set the magnetic field sweep rate, in Tesla/min
 
@@ -155,21 +147,19 @@ class Ips120:
         """
         self._visa_resource.write("$T{}".format(rate))
 
-
     def setDisplay(self, display):
         """Set the display to show amps or tesla
 
         Args:
             display(str): One of ['amps','tesla']
         """
-        assert display in ['amps','tesla'], "argument must be one of ['amps','tesla']"
+        assert display in ['amps', 'tesla'], "argument must be one of ['amps','tesla']"
 
         mode_dict = {'amps':8,
                      'tesla':9
                     }
 
         self._visa_resource.write("$M{}".format(mode_dict[display]))
-
 
     def waitForField(self, timeout=600, error_margin=0.01):
         """Wait for the field to reach the set point
@@ -181,8 +171,6 @@ class Ips120:
         Returns:
             (bool): whether the field set point was reached
         """
-        
-
         start_time = datetime.now()
         stop_time = start_time + datetime.timedelta(seconds=timeout)
 
