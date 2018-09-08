@@ -19,12 +19,9 @@ Classes:
     itc503: a class for interfacing with a ITC 503 temperature controller
 
 """
-import datetime as dt
-import time
 import logging
 
 import visa
-from pyvisa.errors import VisaIOError
 
 # create a logger object for this module
 logger = logging.getLogger(__name__)
@@ -38,17 +35,15 @@ except OSError:
     logger.exception("\n\tCould not find the VISA library. Is the National Instruments VISA driver installed?\n\n")
 
 
-class Itc503():
+class Itc503:
     
-    def __init__(self, GPIBaddr=24):
-        """Connect to an ITC 503 S at the specified GPIB address
+    def __init__(self, gpib_addr=24):
+        """Instantiate an Itc503 object.
 
-        Args:
-            GPIBaddr(int): GPIB address of the ITC 503 
+        :param gpib_addr: GPIB address of the ITC 503
         """
-        self._visa_resource = resource_manager.open_resource("GPIB::%d" % GPIBaddr)
+        self._visa_resource = resource_manager.open_resource("GPIB::%d" % gpib_addr)
         self._visa_resource.read_termination = '\r'
-
 
     def setControl(self, unlocked=1, remote=1):
         """Set the LOCAL / REMOTE control state of the ITC 503
@@ -57,12 +52,10 @@ class Itc503():
         1 - Remote & Locked
         2 - Local & Unlocked
         3 - Remote & Unlocked
-        
-        Locked = Front panel is disabled
-        Unlocked = Front panel usable
 
-        Args:
-            state(int): the state in which to place the ITC 503
+        :param unlocked: 0 to lock, 1 to unlock
+        :param remote: 0 for local, 1 for remote
+        :return: None
         """
         state_bit = str(remote) + str(unlocked)
         state = int(state_bit, 2)
