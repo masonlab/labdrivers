@@ -3,7 +3,7 @@ import logging
 import clr
 
 logger = logging.getLogger(__name__)
-logger.addHandler(logger.StreamHandler())
+logger.addHandler(logging.StreamHandler())
 
 # load the C# .dll supplied by Quantum Design
 clr.AddReference('QDInstrument')
