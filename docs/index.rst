@@ -21,22 +21,22 @@ implements the driver.
 
 Currently labdrivers contains drivers for the following instruments::
 
-	labdrivers/
-	|-- keithley
-	    `-- keithley2400.py
-	|-- lakeshore
-	    `-- ls332.py
-	|-- ni
-	    `-- nidaq.py
-	|-- oxford
-	    |-- itc503.py
-	    |-- ips120.py
-		|-- mercuryips.py
-		`-- triton200.py
-	|-- quantumdesign
-	    `-- qdinstrument.py
-	|-- srs
-	    `-- sr830.py
+   labdrivers/
+   |-- keithley
+       `-- keithley2400.py
+   |-- lakeshore
+       `-- ls332.py
+   |-- ni
+       `-- nidaq.py
+   |-- oxford
+       |-- itc503.py
+       |-- ips120.py
+       |-- mercuryips.py
+       `-- triton200.py
+   |-- quantumdesign
+       `-- qdinstrument.py
+   |-- srs
+       `-- sr830.py
 
 So for example, to load the driver for a Keithley 2400 SMU::
 

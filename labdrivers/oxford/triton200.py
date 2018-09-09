@@ -2,25 +2,19 @@ import socket
 
 
 class Triton200:
+    """
+    Create an instance of the Triton200 class.
 
-    RUO2_CHANNEL = '5'
-    CERNOX_CHANNEL = '6'
+    Supported modes: IP
 
-    VALID_CHANNELS = (CERNOX_CHANNEL, RUO2_CHANNEL)
-
-    HEATER_RANGE = ['0.316', '1', '3.16', '10', '31.6', '100']
+    :param str ip_address: The IP address of the Triton 200.
+    :param int port_number: The associated port number of the Triton 200 (default: 33576)
+    :param int timeout: How long to wait for a response (default: 10000)
+    :param int bytes_to_read: How many bytes to accept from the response (default: 2048)
+    """
 
     def __init__(self, ip_address, port_number=33576, timeout=10000, bytes_to_read=2048):
-        """
-        Constructor for the Triton200 class.
 
-        :param ip_address: The IP address of the Triton 200.
-        :param port_number: The associated port number of the Triton 200.
-        (default: 33576, as per the Triton 200 manual)
-        :param timeout: How long to wait for a response. (default: 10000)
-        :param bytes_to_read: How many bytes to accept from the response.
-        (defualt: 2048)
-        """
         self._address = (str(ip_address), int(port_number))
         self._timeout = timeout
         self._bytes_to_read = bytes_to_read
@@ -34,7 +28,7 @@ class Triton200:
     @property
     def temperature_channel(self):
         """
-        :return: The temperature channel, either the cernox (5) or the RuO2 (6)
+        :returns str: The temperature channel, either the cernox (5) or the RuO2 (6)
         """
         return self._temperature_channel
 
@@ -58,9 +52,7 @@ class Triton200:
 
     @property
     def temperature(self):
-        """
-        :return: The temperature reading from the current temperature channel.
-        """
+        """The temperature reading from the current temperature channel."""
         noun = 'DEV:T' + str(self.temperature_channel) + ':TEMP:SIG:TEMP'
         command = 'READ:' + noun + '\r\n'
         response = self.query_and_receive(command)
@@ -72,6 +64,7 @@ class Triton200:
         Associates the heater with the current temperature channel and changes the heater current to
         preset values given the temperature set point.
         """
+        heater_range = ['0.316', '1', '3.16', '10', '31.6', '100']
         command = 'SET:DEV:T' + str(self.temperature_channel) + ':TEMP:LOOP:HTR:H' + str(self._heater_channel) + '\r\n'
         response = self.query_and_receive(command)
 
@@ -83,7 +76,7 @@ class Triton200:
                         + (self.temperature_setpoint > 0.300)
                         + (self.temperature_setpoint > 1.000)
                         + (self.temperature_setpoint > 1.500))
-        heater_current = Triton200.HEATER_RANGE[heater_index]
+        heater_current = heater_range[heater_index]
 
         command = 'SET:DEV:T' + str(self.temperature_channel) + ':TEMP:LOOP:RANGE:' + heater_current + '\r\n'
         response = self.query_and_receive(command)

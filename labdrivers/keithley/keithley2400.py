@@ -22,9 +22,9 @@ class Keithley2400:
 
     @property
     def source_type(self):
-        """Source type of the Keithley 2400 SourceMeter.
+        """Gets or sets the source type of the Keithley 2400 SourceMeter.
 
-        Expected values: voltage, current."""
+        Expected strings for setting: 'voltage', 'current'"""
         response = self._instrument.query("source:function:mode?").strip()
         source_type = {'VOLT': 'voltage', 'CURR': 'current'}
         return source_type[response]
@@ -42,7 +42,9 @@ class Keithley2400:
 
     @property
     def source_mode(self):
-        """Get or set the mode of the source: [fixed | sweep | list]"""
+        """Gets or sets the mode of the source.
+
+        Expected strings for setting: 'fixed', 'sweep', 'list'"""
         # TODO: test
         return self._instrument.query('source:' + self.source_type.lower() + ':mode?')
 
@@ -69,7 +71,7 @@ class Keithley2400:
     def measure_type(self):
         """The type of measurement the Keithley 2400 SourceMeter will make.
 
-        Expected value: voltage, current, resistance."""
+        Expected strings for setting: 'voltage', 'current', 'resistance'"""
         measure_type = {'VOLT:DC': 'voltage', 'CURR:DC': 'current', 'RES': 'resistance'}
         measure_type_response = self._instrument.query("sense:function?").strip().replace('\"', '').split(',')[-1]
         return measure_type[measure_type_response]
@@ -86,9 +88,9 @@ class Keithley2400:
 
     @property
     def resistance_ohms_mode(self):
-        """Get or set the resistance mode.
+        """Gets or sets the resistance mode.
 
-        Values: 'MAN', 'AUTO'"""
+        Expected strings for setting: 'manual', 'auto'"""
         modes = {'MAN': 'manual', 'AUTO': 'auto'}
         response = self._instrument.query('sense:resistance:mode?').strip()
         return modes[response]
@@ -103,7 +105,7 @@ class Keithley2400:
 
     @property
     def expected_ohms_reading(self):
-        """The expected range of a resistance reading from the device under test."""
+        """Gets or sets the expected range of a resistance reading from the device under test."""
         response = self._instrument.query('sense:resistance:range?').strip()
         return float(response)
 
@@ -116,9 +118,9 @@ class Keithley2400:
 
     @property
     def four_wire_sensing(self):
-        """Queries/sets four-wire sensing.
+        """Gets the status of or sets four-wire sensing.
 
-        Setting expects: True, False."""
+        Expected booleans for setting: True, False."""
         response = self._instrument.query('system:rsense?').strip()
         return bool(int(response))
 
@@ -146,7 +148,9 @@ class Keithley2400:
 
     @property
     def voltage_compliance(self):
-        """Gets or sets the voltage compliance."""
+        """Gets or sets the voltage compliance.
+
+        Expected range of floats: 200e-6 <= x <= 210"""
         response = self._instrument.query("SENS:VOLT:PROT:LEV?").strip()
         return float(response)
 
@@ -158,9 +162,9 @@ class Keithley2400:
             raise RuntimeError('Voltage compliance cannot be set. Value must be between 200 \u03BC' + 'V and 210 V.')
 
     def within_voltage_compliance(self):
-        """Queries if the Keithley is within voltage compliance.
+        """Queries if the measured voltage is within the set compliance.
 
-        :returns: True, False"""
+        :returns: boolean"""
         response = self._instrument.query('SENS:VOLT:PROT:TRIP?').strip()
         return not bool(int(response))
 
@@ -181,6 +185,7 @@ class Keithley2400:
 
     @property
     def current_compliance(self):
+        """Sets or gets the current compliance level in Amperes."""
         response = self._instrument.query("SENS:CURR:PROT:LEV?").strip()
         return float(response)
 
@@ -192,6 +197,9 @@ class Keithley2400:
             raise RuntimeError('Current compliance cannot be set. Value must be between 1 nA and 1.05 A.')
 
     def within_current_compliance(self):
+        """Queries if the measured current is within the set compliance.
+
+        :returns: boolean"""
         response = self._instrument.query('SENS:CURR:PROT:TRIP?').strip()
         return not bool(int(response))
 
@@ -199,7 +207,12 @@ class Keithley2400:
 
     @property
     def output(self):
-        output = {'0': 'off', '1': 'on'}
+        """Gets or sets the source output of the Keithley 2400.
+
+        Expected input: boolean
+
+        :returns: boolean"""
+        output = {'0': False, '1': True}
         response = self._instrument.query("OUTP?").strip()
         return output[response]
 
@@ -212,6 +225,11 @@ class Keithley2400:
 
     @property
     def output_off_mode(self):
+        """Gets or sets the output mode when the output is off.
+
+        Expected input strings: 'himp', 'normal', 'zero', 'guard'
+
+        :returns: description of the output's off mode"""
         modes = {'HIMP': 'high impedance', 'NORM': 'normal', 'ZERO': 'zero', 'GUAR': 'guard'}
         response = self._instrument.query('OUTP:SMOD?').strip()
         return modes[response]
@@ -250,7 +268,8 @@ class Keithley2400:
     def trigger(self):
         """Gets or sets the type of trigger to be used.
 
-        See documentation and source code for possible inputs."""
+        Expected strings for setting: 'immediate', 'tlink', 'timer', 'manual', 'bus',
+        'nst', 'pst', 'bst' (see source code for other possibilities)"""
         triggers = {'IMM': 'immediate',         'TLIN': 'trigger link',         'TIM': 'timer',
                     'MAN': 'manual',            'BUS': 'bus trigger',           'NST': 'low SOT pulse',
                     'PST': 'high SOT pulse',    'BST': 'high or low SOT pulse'}
@@ -275,9 +294,9 @@ class Keithley2400:
 
     @property
     def trigger_count(self):
-        """Number of triggers.
+        """Gets or sets the number of triggers
 
-        Expected value: Between 1 and 2500."""
+        Expected integer value range: 1 <= n <= 2500"""
         return float(self._instrument.query('trigger:count?').strip())
 
     @trigger_count.setter
@@ -305,14 +324,14 @@ class Keithley2400:
     
     @property
     def num_readings_in_buffer(self):
-        """The number of readings stored in buffer."""
+        """Gets the number of readings that are stored in the buffer."""
         return int(self._instrument.query('trace:points:actual?').strip())
 
     @property
     def trace_points(self):
-        """Buffer size.
+        """Gets or sets the size of the buffer
         
-        Expected value: 1 <= n <= 2500."""
+        Expected integer value range: 1 <= n <= 2500"""
         return int(self._instrument.query('trace:points?').strip())
 
     @trace_points.setter
@@ -326,9 +345,9 @@ class Keithley2400:
             raise RuntimeError('Expected type of num_points: int.')
 
     def trace_feed_source(self, value):
-        """Source of readings.
+        """Sets the source of the trace feed.
 
-        Expected values: sense, calculate1, calculate2."""
+        Expected strings: 'sense', 'calculate1', 'calculate2'"""
         if value in ('sense', 'calculate1', 'calculate2'):
             self._instrument.write('trace:feed {}'.format(value))
         else:
@@ -341,7 +360,7 @@ class Keithley2400:
         return trace_list
 
     def clear_trace(self):
-        """Clear buffer."""
+        """Clear the buffer."""
         self._instrument.query('trace:clear')
 
     def buffer_memory_status(self):
@@ -354,7 +373,7 @@ class Keithley2400:
         self._instrument.write('trace:feed:control next')
 
     def disable_buffer(self):
-        """Disable buffer."""
+        """Disables the buffer."""
         self._instrument.write('trace:feed:control never')
 
     # Sweeping
@@ -363,6 +382,7 @@ class Keithley2400:
 
     @property
     def sweep_start(self):
+        """To be implemented."""
         pass
 
     @sweep_start.setter
@@ -371,6 +391,7 @@ class Keithley2400:
 
     @property
     def sweep_end(self):
+        """To be implemented."""
         pass
 
     @sweep_end.setter
@@ -379,6 +400,7 @@ class Keithley2400:
 
     @property
     def sweep_center(self):
+        """To be implemented."""
         pass
 
     @sweep_center.setter
@@ -387,6 +409,7 @@ class Keithley2400:
 
     @property
     def sweep_span(self):
+        """To be implemented."""
         pass
 
     @sweep_span.setter
@@ -395,6 +418,7 @@ class Keithley2400:
 
     @property
     def sweep_ranging(self):
+        """To be implemented."""
         pass
 
     @sweep_ranging.setter
@@ -403,6 +427,7 @@ class Keithley2400:
 
     @property
     def sweep_scale(self):
+        """To be implemented."""
         pass
 
     @sweep_scale.setter
@@ -411,6 +436,7 @@ class Keithley2400:
 
     @property
     def sweep_points(self):
+        """To be implemented."""
         pass
 
     @sweep_points.setter
@@ -419,6 +445,7 @@ class Keithley2400:
 
     @property
     def sweep_direction(self):
+        """To be implemented."""
         pass
 
     @sweep_direction.setter
@@ -445,5 +472,5 @@ class Keithley2400:
                 }
 
     def send_bus_trigger(self):
-        """Sends bus trigger to SourceMeter."""
+        """Sends a bus trigger to SourceMeter."""
         self._instrument.write('*trg')

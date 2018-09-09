@@ -1,24 +1,3 @@
-"""Module containing a class to interface with an Oxford Instruments ITC 503.
-
-Note: Our (Mason Group) laboratory does not have a working motorized needle
-        valve, so the gas functions are not totally useful. However, if
-        it somehow is fixed or if someone not from the group decides to use
-        this module, then it may be of use.
-
-This module requires a National Instruments VISA driver, which can be found at
-https://www.ni.com/visa/
-
-Attributes:
-    resource_manager: the pyvisa resource manager which provides the visa
-                      objects used for communicating over the GPIB interface
-
-    logger: a python logger object
-
-
-Classes:
-    itc503: a class for interfacing with a ITC 503 temperature controller
-
-"""
 import logging
 
 import visa
@@ -36,25 +15,23 @@ except OSError:
 
 
 class Itc503:
+    """
+    Module to connect to an ITC 503.
+
+    Modes supported: GPIB
+
+    :param gpib_addr: GPIB address of the ITC 503
+    """
     
     def __init__(self, gpib_addr=24):
-        """Instantiate an Itc503 object.
-
-        :param gpib_addr: GPIB address of the ITC 503
-        """
         self._visa_resource = resource_manager.open_resource("GPIB::%d" % gpib_addr)
         self._visa_resource.read_termination = '\r'
 
     def setControl(self, unlocked=1, remote=1):
         """Set the LOCAL / REMOTE control state of the ITC 503
 
-        0 - Local & Locked (default state)
-        1 - Remote & Locked
-        2 - Local & Unlocked
-        3 - Remote & Unlocked
-
-        :param unlocked: 0 to lock, 1 to unlock
-        :param remote: 0 for local, 1 for remote
+        :param unlocked (int): 0 to lock, 1 to unlock
+        :param remote (int): 0 for local, 1 for remote
         :return: None
         """
         state_bit = str(remote) + str(unlocked)
@@ -64,11 +41,8 @@ class Itc503:
 
     def setTemperature(self, temperature=0.010):
         """Change the temperature set point.
-        
-        Args:
-            temperature(float): temperature to move to in Kelvin.
-                Default: 0.010 K (10 mK) for default no heating
-                above base temperature for any system.
+
+        :param temperature (float): Temperature set point in Kelvin (default: 0.010)
         """
         assert type(temperature) in [int, float], 'argument must be a number'
         
@@ -77,19 +51,22 @@ class Itc503:
 
     def getValue(self, variable=0):
         """Read the variable defined by the index.
-        
-        There are values 11-13 but generally useless for
-        general use. These are omitted.
-        
-        0: SET TEMPERATURE           6: HEATER O/P (as V)
-        1: SENSOR 1 TEMPERATURE      7: GAS FLOW O/P (a.u.)
-        2: SENSOR 2 TEMPERATURE      8: PROPORTIONAL BAND
-        3: SENSOR 3 TEMPERATURE      9: INTEGRAL ACTION TIME
-        4: TEMPERATURE ERROR        10: DERIVATIVE ACTION TIME
-        5: HEATER O/P (as %)
-        
-        Args:
-            variable: Index of variable to read.
+
+        The possible inputs are::
+
+            0: SET TEMPERATURE
+            1: SENSOR 1 TEMPERATURE
+            2: SENSOR 2 TEMPERATURE
+            3: SENSOR 3 TEMPERATURE
+            4: TEMPERATURE ERROR
+            5: HEATER O/P (as %)
+            6: HEATER O/P (as V)
+            7: GAS FLOW O/P (a.u.)
+            8: PROPORTIONAL BAND
+            9: INTEGRAL ACTION TIME
+            10: DERIVATIVE ACTION TIME
+
+        :param variable (int): Index of variable to read.
         """
         assert type(variable) == int, 'Argument must be an integer.'
         assert variable in range(0,11), 'Argument is not a valid number.'
@@ -102,9 +79,8 @@ class Itc503:
         
     def setProportional(self, prop=0):
         """Sets the proportional band.
-        
-        Args:
-            prop: Proportional band, in steps of 0.0001K.
+
+         :param prop (float): Proportional band, in steps of 0.0001K.
         """
         self._visa_resource.write('$P{}'.format(prop))
         return None

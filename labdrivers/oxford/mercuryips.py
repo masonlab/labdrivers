@@ -4,30 +4,37 @@ import visa
 
 
 class MercuryIps:
-    PORT_NO = 7020
 
     # Magnet class
 
     class Magnet:
+        """
+        Constructor for a magnet along a certain axis.
 
-        def __init__(self, axis, mode='ip', resource_name=None, ip_address=None, timeout=10.0,
+        :param axis: The axis for the magnet, given by ['GRPX'|'GRPY'|'GRPZ']
+        :type axis: string
+        :param mode: Connection, given by ['ip'|'visa']
+        :type mode: string
+        :param resource_name: VISA resource name of the MercuryIPS
+        :type resource_name: string
+        :param ip_address: IP address of the MercuryIPS
+        :type ip_address: string
+        :param port: Port number of the Mercury iPS
+        :type port: integer
+        :param timeout: Time to wait for a response from the MercuryIPS before throwing an error.
+        :type timeout: float
+        :param bytes_to_read: Amount of information to read from a response
+        :type bytes_to_read: integer
+        """
+
+        def __init__(self, axis, mode='ip', resource_name=None, ip_address=None, port=7020, timeout=10.0,
                      bytes_to_read=2048):
-            """
-            Constructor for a magnet along a certain axis.
-
-            :param axis: The axis for the magnet, given by ['GRPX'|'GRPY'|'GRPZ']
-            :param mode: Connection, given by ['ip'|'visa']
-            :param resource_name: VISA resource name of the MercuryIPS
-            :param ip_address: IP address of the MercuryIPS
-            :param timeout: Time to wait for a response from the MercuryIPS before throwing an error.
-            :param bytes_to_read: Amount of information to read from a response
-            """
             self.axis = axis
-
             self.mode = mode
             self.resource_name = resource_name
             self.resource_manager = visa.ResourceManager()
             self.ip_address = ip_address
+            self.port = port
             self.timeout = timeout
             self.bytes_to_read = bytes_to_read
 
@@ -39,10 +46,11 @@ class MercuryIps:
             """Sends a query to the MercuryIPS via ethernet.
             
             :param command: The command, which should be in the NOUN + VERB format
-            :return: The MercuryIPS response
+            :type command: string
+            :returns str: The MercuryIPS response
             """
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.connect((self.ip_address, MercuryIps.PORT_NO))
+                s.connect((self.ip_address, self.port))
                 s.settimeout(self.timeout)
                 s.sendall(command.encode())
                 response = s.recv(self.bytes_to_read).decode()
@@ -53,7 +61,8 @@ class MercuryIps:
             """Sends a query to the MercuryIPS via VISA.
             
             :param command: The command, which should be in the NOUN + VERB format
-            :return: The MercuryIPS response
+            :type command: string
+            :returns str: The MercuryIPS response
             """
             instr = self.resource_manager.open_resource(self.resource_name)
             response = instr.query(command)
@@ -66,9 +75,10 @@ class MercuryIps:
             """Finds the value that is contained within the response to a previously sent query.
             
             :param response: The response from a query.
+            :type response: string
             :param noun: The part of the query that refers to the NOUN (refer to MercuryIPS documentation).
             :param unit: The measurement unit (e.g. K for Kelvin, T for Tesla).
-            :return: A floating-point value of the response, but without units.
+            :returns float: The value of the response, but without units.
             """
             expected_response = 'STAT:' + noun + ':'
             value = float(response.replace(expected_response, '').strip('\n').replace(unit, ''))
@@ -79,7 +89,7 @@ class MercuryIps:
 
         @property
         def field_setpoint(self):
-            """The magnetic field setpoint in Tesla along the magnet axis."""
+            """The magnetic field set point in Tesla"""
             noun = 'DEV:' + self.axis + ':PSU:SIG:FSET'
             command = 'READ:' + noun + '\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
@@ -117,7 +127,7 @@ class MercuryIps:
 
         @property
         def current_setpoint(self):
-            """The setpoint of the current for a magnet in Amperes."""
+            """The set point of the current for a magnet in Amperes."""
             noun = 'DEV:' + self.axis + ':PSU:SIG:CSET'
             command = 'READ:' + noun + '\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
@@ -151,6 +161,7 @@ class MercuryIps:
 
         @property
         def magnetic_field(self):
+            """Gets the magnetic field."""
             noun = 'DEV:' + self.axis + ':PSU:SIG:FLD'
             command = 'READ:' + noun + '\n'
             response = MercuryIps.Magnet.QUERY_AND_RECEIVE[self.mode](self, command)
@@ -218,14 +229,18 @@ class MercuryIps:
 
     def __init__(self, mode='ip',
                  resource_name=None,
-                 ip_address=None, timeout=10.0, bytes_to_read=2048):
+                 ip_address=None, port=7020, timeout=10.0, bytes_to_read=2048):
         """
         Parameters:
-        :param mode: ['ip'|'visa']
-        :param resource_name: VISA resource name of the Mercury iPS
-        :param ip_address: IP address of the Mercury iPS
+        :param str mode: The connection to the iPS, either 'ip' or 'visa'
+        :param str resource_name: VISA resource name of the Mercury iPS
+        :param str ip_address: IP address of the Mercury iPS
+        :param port: Port number of the Mercury iPS
+        :type port: integer
         :param timeout: Time in seconds to wait for command acknowledgment
+        :type timeout: float
         :param bytes_to_read: Number of bytes to read from query
+        :type bytes_to_read: integer
         """
         supported_modes = ('ip', 'visa')
 
@@ -234,12 +249,12 @@ class MercuryIps:
         else:
             raise RuntimeError('Mode is not currently supported.')
 
-        self.x_magnet = MercuryIps.Magnet('GRPX', mode=mode, resource_name=resource_name,
-                                          ip_address=ip_address, timeout=timeout, bytes_to_read=bytes_to_read)
-        self.y_magnet = MercuryIps.Magnet('GRPY', mode=mode, resource_name=resource_name,
-                                          ip_address=ip_address, timeout=timeout, bytes_to_read=bytes_to_read)
-        self.z_magnet = MercuryIps.Magnet('GRPZ', mode=mode, resource_name=resource_name,
-                                          ip_address=ip_address, timeout=timeout, bytes_to_read=bytes_to_read)
+        self.x_magnet = MercuryIps.Magnet('GRPX', mode=mode, resource_name=resource_name, ip_address=ip_address,
+                                          port=7020, timeout=timeout, bytes_to_read=bytes_to_read)
+        self.y_magnet = MercuryIps.Magnet('GRPY', mode=mode, resource_name=resource_name, ip_address=ip_address,
+                                          port=7020, timeout=timeout, bytes_to_read=bytes_to_read)
+        self.z_magnet = MercuryIps.Magnet('GRPZ', mode=mode, resource_name=resource_name, ip_address=ip_address,
+                                          port=7020, timeout=timeout, bytes_to_read=bytes_to_read)
 
     def circle_sweep(self, field_radius, number_points):
         pass
