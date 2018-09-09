@@ -20,21 +20,22 @@ class Ls332:
     CHANNELS = ('A', 'B')
 
     def __init__(self, gpib_addr = 12):
-        """Intantiate an LS332 object
-
-        :param gpib_addr: GPIB address of the LS332
-        """
         self.resource_manager = visa.ResourceManager()
         self._visa_resource = self.resource_manager.open_resource("GPIB::%d" % gpib_addr)
         self.channel = None
 
     @property
     def channel(self):
+        """Gets or sets the current channel of the LS332.
+
+        Setting expects the strings: 'A', 'B'
+
+        :returns: The channel 'A' or 'B'"""
         return self.channel
 
     @channel.setter
-    def channel(self, value):
-        input_value = value.upper()
+    def channel(self, channel):
+        input_value = channel.upper()
 
         if input_value in Ls332.CHANNELS:
             self.channel = input_value
@@ -47,8 +48,10 @@ class Ls332:
 
     @property
     def temperature(self):
+        """Reads the temperature of the currently-set channel."""
         return self._visa_resource.query_ascii_values("KRDG? {}".format(self.channel))
 
     @property
     def temperature_setpoint(self):
+        """Reads the temperature set point of the currently-set channel."""
         return self._visa_resource.query_ascii_values("SETP? {}".format(self.channel))

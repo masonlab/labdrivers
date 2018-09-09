@@ -9,9 +9,7 @@ class Nidaq:
     
     Built on top of PyDAQmx. 
     
-    For task.<function> call signature explanations see:
-        All Programs -> National Instruments -> NI-DAQ -> Text-based Code Support
-                     -> NI-DAQmx C Reference Help
+    Reference: NI-DAQmx C Reference Help
     """
     
     def __init__(self, device='Dev1'):
