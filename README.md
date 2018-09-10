@@ -87,7 +87,7 @@ You may install using:
 In order for `labdrivers` to read through the C# code of the Quantum Design DLL file, `pythonnet` is required.
 In principle, `pythonnet` could be included in the pip-installation but there have been many issues with the
 documentation not building and installation issues that have been traced back to installing this module.
-Note that `pythonnet` is compatible with Python 3.6 at most (see its repository), and that it requires non-Python
+Note that `pythonnet` is compatible with **Python 3.6** at most (see its repository), and that it requires non-Python
 dependencies like .NET 4.0+. As of writing this, it is not entirely clear what else is required,
 though errors regarding Cython have been observed. It might not hurt to have other C/C++ related things installed,
 like Visual Studio (if you're on Windows).
