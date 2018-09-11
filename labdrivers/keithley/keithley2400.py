@@ -490,7 +490,8 @@ class Keithley2400:
     def ramp_to_zero(self):
         pass
 
-    def ramp_to_setpoint(self, setpoint: float, step: float, wait: float)
+    def ramp_to_setpoint(self, setpoint: float, step: float, wait: float):
+        pass
 
     # Common commands
 
