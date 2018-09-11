@@ -3,6 +3,16 @@
 If you don't want to try and figure out all the changes from the diff and commits,
 just read this. I wrote this to make the changes more robust.
 
+## 0.9.6: Keithley read changes
+
+- Keithley 2400s should be able to properly read out what they're supposed to.
+  The Keithley2400.read() function takes a variable number of arguments that are
+  in the list: 'voltage', 'current', 'resistance', 'time'. The internal workings
+  assume that the function returns a list which has a length which is some
+  multiple of 5. Keithley2400.read() returns a tuple of lists, the first element
+  in the tuple being the mean values of the requested values to be read, the second
+  being the standard deviation (if there are multiple readings in the buffer).
+
 ## 0.9.5: Quantum Design package major update
 
 - New classes for PPMS, (PPMS) DynaCool, VersaLab, SVSM, and MPMS. The Dynacool class

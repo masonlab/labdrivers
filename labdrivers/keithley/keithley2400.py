@@ -1,3 +1,5 @@
+from statistics import mean, stdev
+
 import visa
 
 
@@ -71,7 +73,8 @@ class Keithley2400:
     def measure_type(self):
         """The type of measurement the Keithley 2400 SourceMeter will make.
 
-        Expected strings for setting: 'voltage', 'current', 'resistance'"""
+        Expected strings for setting: 'voltage', 'current', 'resistance'
+        """
         measure_type = {'VOLT:DC': 'voltage', 'CURR:DC': 'current', 'RES': 'resistance'}
         measure_type_response = self._instrument.query("sense:function?").strip().replace('\"', '').split(',')[-1]
         return measure_type[measure_type_response]
@@ -242,10 +245,40 @@ class Keithley2400:
 
     # Data acquisition
 
-    def read(self):
-        """Commands the Keithley 2400 to make a measurement based on its current measurement mode."""
-        response = self._instrument.query('read?').strip()
-        return float(response)
+    def read(self, *measurements):
+        """
+        
+        Reads data from the Keithley 2400. Equivalent to the command :INIT; :FETCH?
+
+        Multiple string arguments may be used. For example::
+            
+            keithley.read('voltage', 'current')
+            keithley.read('time')
+
+        The first line returns a list in the form [voltage, current] and the second line
+        returns a list in the form [time].
+
+        Note: The returned lists contains the values in the order that you requested.
+
+        :param str *measurements: Any number of arguments that are from: 'voltage', 'current', 'resistance', 'time'
+        :return list measure_list: A list of the arithmetic means in the order of the given arguments
+        :return list measure_stdev_list: A list of the standard deviations (if more than 1 measurement) in the order
+            of the given arguments
+        """
+        response = self._instrument.query('read?').strip().split(',')
+        response = [float(x) for x in response]
+        read_types = {'voltage': 0, 'current': 1, 'resistance': 2, 'time': 3}
+
+        measure_list = []
+        measure_stdev_list = []
+
+        for measurement in measurements:
+            samples = response[read_types[measurement]::5]
+            measure_list.append(mean(samples))
+            if len(samples) > 1:
+                measure_stdev_list.append(stdev(samples))
+
+        return measure_list, measure_stdev_list
 
     # Trigger functions
 
@@ -451,6 +484,13 @@ class Keithley2400:
     @sweep_direction.setter
     def sweep_direction(self, direction):
         pass
+
+    # Ramping commands
+
+    def ramp_to_zero(self):
+        pass
+
+    def ramp_to_setpoint(self, setpoint: float, step: float, wait: float)
 
     # Common commands
 
